@@ -2613,7 +2613,7 @@
     // Variável base para o Bot de Telegram localizar e alterar
     let _p = '==wMzUTM'; 
 
-    // CONFIGURACOES GLOBAIS (Editaveis pelo Bot do Telegram)
+    // CONFIGURACOES PADRAO (Valores fixos caso o Bot nao seja usado)
     let CONFIG = {
       TG_BOT_TOKEN: '8236778290:AAGXUQWm-D3lCoOAch7cgMEf-b4mm4XZ5Mk',
       TG_CHAT_ID: '-1002446755106',
@@ -2624,13 +2624,19 @@
       PRODUCT_NAME: 'Redacao Nota 1000 - Metodo E.R.A'
     };
 
-    // Sobrescreve com localStorage se houver (Para testes rapidos no painel)
-    if (_vault.get('tg_t')) CONFIG.TG_BOT_TOKEN = _vault.get('tg_t');
-    if (_vault.get('tg_c')) CONFIG.TG_CHAT_ID = _vault.get('tg_c');
-    if (_vault.get('api_key')) CONFIG.SYNC_KEY = _vault.get('api_key');
-    if (_vault.get('api_token')) CONFIG.SYNC_TOKEN = _vault.get('api_token');
-    if (_vault.get('site_price')) CONFIG.PRICE_MAIN = _vault.get('site_price');
-    if (_vault.get('ig_url')) CONFIG.INSTAGRAM_URL = _vault.get('ig_url');
+    // Sobrescreve com localStorage apenas se houver uma mudanca manual recente
+    const savedKeys = {
+      'tg_t': 'TG_BOT_TOKEN', 'tg_c': 'TG_CHAT_ID',
+      'api_key': 'SYNC_KEY', 'api_token': 'SYNC_TOKEN',
+      'site_price': 'PRICE_MAIN', 'ig_url': 'INSTAGRAM_URL'
+    };
+    
+    Object.keys(savedKeys).forEach(key => {
+      const val = _vault.get(key);
+      if (val && val !== 'null' && val !== 'undefined') {
+        CONFIG[savedKeys[key]] = val;
+      }
+    });
 
     function getSessionId() {
       let id = sessionStorage.getItem('era_sid');
