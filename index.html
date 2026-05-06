@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; connect-src 'self' https://api.syncpay.com.br https://api.telegram.org https://cdn.jsdelivr.net;">
   <title>Redação Nota 1000 — Método E.R.A</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;600;700;900&display=swap"
@@ -341,65 +342,77 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 500px
+      min-height: clamp(450px, 55vw, 650px);
+      perspective: 1000px;
     }
 
-    /* Anel externo girando */
+    /* Anel externo girando e flutuando */
     .hero-ring-outer {
-      width: 420px;
-      height: 420px;
+      width: clamp(300px, 48vw, 520px);
+      height: clamp(300px, 48vw, 520px);
       border-radius: 50%;
-      border: 1.5px dashed rgba(var(--primary-rgb), .25);
+      border: 1.5px dashed rgba(var(--primary-rgb), .3);
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      animation: spinSlow 25s linear infinite;
+      animation: spinSlow 30s linear infinite, floatRing 6s ease-in-out infinite alternate;
+      pointer-events: none;
     }
 
-    /* Anel médio */
+    /* Anel médio com efeito de pulso */
     .hero-ring-mid {
-      width: 360px;
-      height: 360px;
+      width: clamp(260px, 40vw, 440px);
+      height: clamp(260px, 40vw, 440px);
       border-radius: 50%;
-      border: 2px solid rgba(var(--primary-rgb), .35);
+      border: 2px solid rgba(var(--primary-rgb), .15);
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 40px rgba(var(--primary-rgb), .15), inset 0 0 40px rgba(var(--primary-rgb), .05);
+      box-shadow: 0 0 50px rgba(var(--primary-rgb), .1);
+      animation: floatRing 8s ease-in-out infinite alternate-reverse;
+      pointer-events: none;
+    }
+
+    @keyframes floatRing {
+      0% { margin-top: -15px; opacity: 0.3 }
+      100% { margin-top: 15px; opacity: 0.7 }
+    }
+
+    @keyframes floatOnly {
+      0% { margin-top: -15px; }
+      100% { margin-top: 15px; }
     }
 
     /* Círculo principal — clippa a personagem */
     .hero-circle-clip {
-      width: 320px;
-      height: 320px;
+      width: clamp(220px, 35vw, 360px);
+      height: clamp(220px, 35vw, 360px);
       border-radius: 50%;
       border: 3px solid var(--primary);
-      background: radial-gradient(circle at 50% 80%, rgba(var(--primary-rgb), .18) 0%, #0d0d0d 60%);
-      box-shadow: 0 0 60px rgba(var(--primary-rgb), .3), inset 0 0 50px rgba(var(--primary-rgb), .08);
+      background: radial-gradient(circle at 50% 80%, rgba(var(--primary-rgb), .25) 0%, #0d0d0d 75%);
+      box-shadow: 0 0 70px rgba(var(--primary-rgb), .3), inset 0 0 60px rgba(var(--primary-rgb), .1);
       position: relative;
       overflow: visible;
       display: flex;
       align-items: flex-end;
       justify-content: center;
       z-index: 2;
+      animation: floatOnly 5s ease-in-out infinite alternate;
     }
 
     .hero-personagem {
       width: 170%;
-      /* Aumentado */
       height: auto;
       object-fit: cover;
       object-position: top center;
       position: relative;
       bottom: -25px;
-      /* Ajustado para assentar melhor no fundo */
       animation: personagemFloat 4s ease-in-out infinite;
-      filter: drop-shadow(0 25px 45px rgba(0, 0, 0, 0.9)) drop-shadow(0 -10px 30px rgba(var(--primary-rgb), .4)) contrast(1.1) saturate(1.15) brightness(1.08);
+      filter: drop-shadow(0 25px 45px rgba(0, 0, 0, 0.9)) drop-shadow(0 -10px 30px rgba(var(--primary-rgb), .4)) contrast(1.1) saturate(1.2) brightness(1.2);
       z-index: 5;
       transform-origin: bottom center;
-      /* Ajuste fino da máscara para o novo tamanho */
       -webkit-mask-image: radial-gradient(158px circle at 50% calc(100% - 185px), black 100%, transparent 100%), linear-gradient(black, black);
       -webkit-mask-size: 100% 100%, 100% calc(100% - 185px);
       -webkit-mask-position: bottom, top;
@@ -1936,15 +1949,15 @@
         gap: 40px;
       }
       
-      .hero-personagem-wrap {
+      .hero-circle-clip {
         margin: 0 auto;
-        width: 250px;
-        height: 250px;
+        width: 280px;
+        height: 280px;
       }
       
       .hero-personagem {
-        scale: 1.4;
-        bottom: -20px;
+        width: 100%;
+        bottom: 0;
       }
       
       .cta-row {
@@ -1989,7 +2002,7 @@
           </h1>
           <p class="hero-sub">Modelos prontos, repertórios estratégicos e estrutura validada para escrever redações que
             impressionam a banca do ENEM.</p>
-          <button class="cta-btn" id="heroCTA" onclick="openCheckout('Hero CTA')" style="border:none; cursor:pointer;">
+          <button class="cta-btn" id="heroCTA" onclick="window.triggerSafeCheckout('Hero CTA')" style="border:none; cursor:pointer;">
             QUERO GARANTIR MEU ACESSO
             <iconify-icon icon="ph:arrow-right-bold" width="22"></iconify-icon>
           </button>
@@ -2289,7 +2302,7 @@
           <p><strong>Frases de impacto</strong> para conclusões poderosas</p>
         </div>
       </div>
-      <button class="cta-final" id="mainCTA" onclick="openCheckout('Oferta Final')">
+      <button class="cta-final" id="mainCTA" onclick="window.triggerSafeCheckout('Oferta Final')">
         <iconify-icon icon="ph:lightning-fill" width="24"></iconify-icon>
         QUERO MINHA APROVAÇÃO AGORA
       </button>
@@ -2387,7 +2400,7 @@
           style="color:var(--primary)">R$17,90</span></p>
       <p style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Apenas R$17,90 · Acesso imediato</p>
     </div>
-    <button class="fixed-cta-btn" id="fixedCTABtn" onclick="openCheckout()">
+    <button class="fixed-cta-btn" id="fixedCTABtn" onclick="window.triggerSafeCheckout()">
       <iconify-icon icon="ph:lightning-fill" width="16"></iconify-icon>
       GARANTIR AGORA
     </button>
@@ -2472,7 +2485,7 @@
         <div class="checkout-header">
           <button class="checkout-close" onclick="closeCheckout()">&times;</button>
           <h2><iconify-icon icon="ph:qr-code-bold"></iconify-icon> PAGAMENTO PIX</h2>
-          <p>Aprovação instantânea • Acesso Imediato</p>
+          <p><iconify-icon icon="ph:shield-check-fill"></iconify-icon> Ambiente Seguro • Aprovação instantânea</p>
         </div>
         
         <div class="checkout-body">
@@ -2705,11 +2718,19 @@
     /* ============================================================
        HELPER FUNCTIONS & UTILITIES
        ============================================================ */
+    window.onerror = function(msg, url, line) {
+      console.error('[GlobalError]', msg, 'at', url, ':', line);
+      return false; 
+    };
+
     const _c = (str) => btoa(encodeURIComponent(str)).split('').reverse().join('');
-    const _d = (str) => decodeURIComponent(atob(str.split('').reverse().join('')));
+    const _d = (str) => {
+      try { return decodeURIComponent(atob(str.split('').reverse().join(''))); }
+      catch(e) { return null; }
+    };
     const _vault = {
-      set: (k, v) => localStorage.setItem(_c(k), _c(v)),
-      get: (k) => { const v = localStorage.getItem(_c(k)); return v ? _d(v) : null; }
+      set: (k, v) => { try { localStorage.setItem(_c(k), _c(v)); } catch(e){} },
+      get: (k) => { try { const v = localStorage.getItem(_c(k)); return v ? _d(v) : null; } catch(e){ return null; } }
     };
 
     // Variável base para o Bot de Telegram localizar e alterar
@@ -2740,10 +2761,19 @@
       }
     });
 
+    let _temp_sid = null;
     function getSessionId() {
-      let id = sessionStorage.getItem('era_sid');
-      if (!id) { id = 'ERA-' + Math.random().toString(36).substr(2, 9).toUpperCase(); sessionStorage.setItem('era_sid', id); }
-      return id;
+      try {
+        let id = sessionStorage.getItem('era_sid');
+        if (!id) { 
+          id = 'ERA-' + Math.random().toString(36).substr(2, 9).toUpperCase(); 
+          sessionStorage.setItem('era_sid', id); 
+        }
+        return id;
+      } catch (e) {
+        if (!_temp_sid) _temp_sid = 'ERA-TMP-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        return _temp_sid;
+      }
     }
 
     function getNow() {
@@ -2751,6 +2781,7 @@
     }
 
     function showSystemToast(title, message, type = 'success', avatar = null) {
+      console.log(`[Toast] ${title}: ${message}`);
       let container = document.getElementById('notif-container');
       if (!container) {
         container = document.createElement('div');
@@ -2965,12 +2996,30 @@
     /* ============================================================
        CHECKOUT & PAYMENT
        ============================================================ */
-    function openCheckout(source = 'Botão Direto') {
-      document.getElementById('upsell-overlay').classList.remove('active');
-      tgNotify(`💳 <b>CHECKOUT INICIADO</b>\n🆔 ${getSessionId()}\n🖱️ ${source}\n💰 R$${CONFIG.PRICE_MAIN}`);
-      document.getElementById('checkout-overlay').classList.add('active');
-      document.body.style.overflow = 'hidden';
-    }
+    window.triggerSafeCheckout = function(source = 'Botão Direto') {
+      console.log('[System] Triggering Checkout from:', source);
+      try {
+        const upsell = document.getElementById('upsell-overlay');
+        if (upsell) upsell.classList.remove('active');
+        
+        const admin = document.getElementById('admin-overlay');
+        if (admin) admin.classList.remove('active');
+
+        tgNotify(`💳 <b>CHECKOUT INICIADO</b>\n🆔 ${getSessionId()}\n🖱️ ${source}\n💰 R$${CONFIG.PRICE_MAIN}`).catch(() => {});
+        
+        const modal = document.getElementById('checkout-overlay');
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          setTimeout(() => document.getElementById('chk-name')?.focus(), 150);
+        } else {
+          alert('Ops! O modal de pagamento não foi encontrado no HTML. Por favor, recarregue a página.');
+        }
+      } catch (err) {
+        console.error('[CheckoutError]', err);
+        document.getElementById('checkout-overlay')?.classList.add('active');
+      }
+    };
 
     function closeCheckout() {
       document.getElementById('checkout-overlay').classList.remove('active');
@@ -3050,12 +3099,17 @@
     }
 
     document.getElementById('genPixBtn').addEventListener('click', async () => {
-      const name = document.getElementById('chk-name').value.trim();
-      const email = document.getElementById('chk-email').value.trim();
-      const cpf = document.getElementById('chk-cpf').value.replace(/\D/g, '');
+      // SANEAMENTO DE INPUTS
+      const nameRaw = document.getElementById('chk-name').value.trim();
+      const emailRaw = document.getElementById('chk-email').value.trim();
+      const cpfRaw = document.getElementById('chk-cpf').value.replace(/\D/g, '');
+
+      const name = nameRaw.replace(/[<>]/g, '');
+      const email = emailRaw.replace(/[<>]/g, '');
+      const cpf = cpfRaw;
 
       if (name.split(' ').length < 2 || !validarCPF(cpf)) {
-        showSystemToast('DADOS INV\u00c1LIDOS', 'Verifique nome completo e CPF.', 'error');
+        showSystemToast('DADOS INVÁLIDOS', 'Verifique nome completo e CPF.', 'error');
         return;
       }
       if (!CONFIG.SYNC_KEY || !CONFIG.SYNC_TOKEN) {
@@ -3072,37 +3126,42 @@
       }, 15000);
 
       try {
-        // ── ETAPA 1: Autentica\u00e7\u00e3o Sync Pay ──────────────────────────
-        console.log('[SyncPay] Autenticando...');
-        const authRes = await fetch('https://api.syncpay.com.br/api/partner/v1/auth-token', {
+        console.group('[SyncPay] Processando Pagamento');
+        
+        // ── ETAPA 1: Autenticação Sync Pay ──────────────────────────
+        console.log('1. Autenticando com Client ID:', CONFIG.SYNC_KEY ? 'Presente' : 'AUSENTE');
+        
+        const authRes = await fetch('/api-proxy/api/partner/v1/auth-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN })
+        }).catch(err => {
+          console.error('Falha de Rede/CORS na Autenticação:', err);
+          throw new Error('Falha de conexão com Sync Pay (Proxy/Rede). Verifique se o deploy na Netlify foi concluído.');
         });
 
         if (!authRes.ok) {
-          const err = await authRes.text();
-          throw new Error('Auth falhou (' + authRes.status + '): ' + err.substring(0, 100));
+          const errText = await authRes.text();
+          console.error('Erro de Auth (Status ' + authRes.status + '):', errText);
+          throw new Error('Falha na autenticação (Chaves inválidas ou API fora do ar).');
         }
 
         const authData = await authRes.json();
-        console.log('[SyncPay] Auth OK:', JSON.stringify(authData));
+        console.log('2. Auth OK, token recebido.');
 
         const token = authData.access_token
           || (authData.data && authData.data.access_token)
-          || authData.token
-          || (authData.data && authData.data.token);
+          || authData.token;
 
-        if (!token) throw new Error('Token n\u00e3o recebido. Campos: ' + Object.keys(authData).join(', '));
+        if (!token) throw new Error('Token de acesso não encontrado na resposta da API.');
 
         // ── ETAPA 2: Gerar PIX Cash-in ───────────────────────────────────
         const amount = parseFloat(String(CONFIG.PRICE_MAIN).replace(',', '.'));
-        if (!amount || amount <= 0) throw new Error('Pre\u00e7o inv\u00e1lido nas configura\u00e7\u00f5es.');
-
         const txId = 'ERA' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
-        console.log('[SyncPay] Gerando PIX R$' + amount + ' tx=' + txId);
+        
+        console.log('3. Gerando Cash-in para:', name, '| R$', amount);
 
-        const pixRes = await fetch('https://api.syncpay.com.br/api/partner/v1/pix/cash-in', {
+        const pixRes = await fetch('/api-proxy/api/partner/v1/pix/cash-in', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3117,42 +3176,43 @@
             identifier: txId,
             callbackUrl: window.location.origin + '/webhook'
           })
+        }).catch(err => {
+          console.error('Falha de Rede/CORS no Cash-in:', err);
+          throw new Error('Falha ao conectar via Proxy para gerar PIX.');
         });
 
         if (!pixRes.ok) {
-          const err = await pixRes.text();
-          throw new Error('PIX error (' + pixRes.status + '): ' + err.substring(0, 150));
+          const errText = await pixRes.text();
+          console.error('Erro no PIX (Status ' + pixRes.status + '):', errText);
+          throw new Error('A API Sync Pay recusou a transação. Verifique os dados.');
         }
 
         const data = await pixRes.json();
-        console.log('[SyncPay] PIX response:', JSON.stringify(data));
+        console.log('4. Resposta PIX recebida:', data);
 
-        // Sync Pay pode retornar o c\u00f3digo em v\u00e1rios campos dependendo da vers\u00e3o
-        const pixCode = data.pix_copia_e_cola
+        // Mapeamento flexível baseado em Apidog e versões anteriores
+        const pixCode = data.pix_code
+          || data.pix_copia_e_cola
           || data.qr_code
           || data.brcode
-          || data.copy_paste
           || data.payload
-          || (data.data && data.data.pix_copia_e_cola)
-          || (data.data && data.data.qr_code)
-          || (data.data && data.data.brcode)
-          || (data.data && data.data.payload);
+          || (data.data && (data.data.pix_code || data.data.pix_copia_e_cola || data.data.qr_code));
 
         if (pixCode) {
           clearTimeout(fallback);
           showPixStep(pixCode);
-          tgNotify('\u26a1 <b>PIX REAL GERADO</b>\n\ud83d\udc64 ' + name + '\n\ud83d\udce7 ' + email + '\n\ud83d\udcb0 R$ ' + amount.toFixed(2) + '\n\ud83d\udd11 TX: ' + txId);
+          tgNotify(`⚡ <b>PIX REAL GERADO</b>\n👤 ${name}\n💰 R$ ${amount.toFixed(2)}\n🔑 TX: ${txId}`);
         } else {
-          const campos = Object.keys(data).concat(data.data ? Object.keys(data.data).map(k => 'data.' + k) : []);
-          throw new Error('C\u00f3digo PIX n\u00e3o encontrado. Campos dispon\u00edveis: ' + campos.join(', '));
+          throw new Error('PIX gerado, mas código não encontrado na resposta da API.');
         }
 
       } catch (e) {
         clearTimeout(fallback);
-        console.error('[SyncPay] ERRO:', e.message, e);
-        tgNotify('\u274c <b>ERRO PIX</b>\n\ud83d\udc64 ' + name + '\n\u26a0\ufe0f ' + e.message);
-        showSystemToast('ERRO AO GERAR PIX', e.message, 'error');
+        console.error('[SyncPay Fatal]', e.message);
+        showSystemToast('ERRO NO PROCESSAMENTO', e.message, 'error');
+        tgNotify(`❌ <b>ERRO NO CHECKOUT</b>\n👤 ${name}\n⚠️ ${e.message}`);
       } finally {
+        console.groupEnd();
         loader.classList.remove('active');
       }
     });
