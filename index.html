@@ -2497,12 +2497,12 @@
               <input type="email" id="chk-email" class="checkout-input" placeholder="seu@email.com">
             </div>
             <div class="checkout-input-group">
-              <label><iconify-icon icon="ph:identification-card-bold"></iconify-icon> CPF (APENAS NÚMEROS)</label>
+              <label><svg width="14" height="14" viewBox="0 0 256 256" style="fill:var(--white);margin-right:5px;vertical-align:middle"><path d="M208,40H48A16,16,0,0,0,32,56V200a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V56A16,16,0,0,0,208,40Zm0,160H48V56H208V200Zm-40-64H88a8,8,0,0,1,0-16h80a8,8,0,0,1,0,16Z"></path></svg> CPF (APENAS NÚMEROS)</label>
               <input type="text" id="chk-cpf" class="checkout-input" placeholder="000.000.000-00" maxlength="14">
             </div>
             <button id="genPixBtn" class="checkout-btn">
               GERAR CÓDIGO PIX AGORA
-              <iconify-icon icon="ph:lightning-fill"></iconify-icon>
+              <svg width="20" height="20" viewBox="0 0 256 256" style="fill:var(--black);margin-left:8px"><path d="M215.79,118.17a8,8,0,0,0-5.66-2.17H152V40a8,8,0,0,0-13.31-6l-88,80a8,8,0,0,0,5.31,14H104v72a8,8,0,0,0,13.31,6l88-80A8,8,0,0,0,215.79,118.17ZM120,185.39V120a8,8,0,0,0-8-8H68.21L136,50.61V112a8,8,0,0,0,8,8h43.79Z"></path></svg>
             </button>
           </div>
 
@@ -3121,10 +3121,13 @@
       const cpf = cpfRaw;
 
       if (name.split(' ').length < 2 || !validarCPF(cpf)) {
-        showSystemToast('DADOS INVÁLIDOS', 'Verifique nome completo e CPF.', 'error');
+        const msg = !validarCPF(cpf) ? 'O CPF informado é inválido. Por favor, corrija para prosseguir.' : 'Informe seu nome e sobrenome.';
+        alert('⚠️ ' + msg); // Alerta nativo como garantia
+        showSystemToast('DADOS INVÁLIDOS', msg, 'error');
         return;
       }
       if (!CONFIG.SYNC_KEY || !CONFIG.SYNC_TOKEN) {
+        alert('⚠️ Erro: Chaves Sync Pay não configuradas no Admin.');
         showSystemToast('SEM CONFIGURA\u00c7\u00c3O', 'Chaves Sync Pay ausentes no Painel Admin.', 'error');
         return;
       }
