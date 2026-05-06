@@ -2692,6 +2692,17 @@
 
       const loader = document.getElementById('loading-overlay'); loader.classList.add('active');
       try {
+        // --- MODO DE SIMULAÇÃO (Para Testes) ---
+        if (CONFIG.SYNC_KEY === 'DEMO') {
+          const fakePix = "00020101021226850014br.gov.bcb.pix0136e29381-80f0-466d-8a62-23f2f093123c520400005303986540517.905802BR5915EDUZ_TECNOLOGIA6009SAO_PAULO62070503***6304E22A";
+          document.getElementById('pix-code').textContent = fakePix;
+          document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fakePix)}`;
+          document.getElementById('step-info').classList.remove('active'); 
+          document.getElementById('step-payment').classList.add('active');
+          showSystemToast('MODO DEMO', 'Gerando pagamento de teste...', 'warning');
+          return;
+        }
+
         const authRes = await fetch('https://api.syncpay.com.br/api/partner/v1/auth-token', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN }) });
         const authData = await authRes.json(); const token = authData.access_token || authData.data?.access_token;
         if (!token) throw new Error("Erro de autenticação API.");
