@@ -1543,33 +1543,56 @@
       
     }
 
-    /* ===== ADMIN MODAL ===== */
-    #admin-overlay {
+    /* ===== MODAIS E OVERLAYS ===== */
+    .overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, .92);
-      z-index: 9999;
+      background: rgba(0, 0, 0, .96);
+      z-index: 10000;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      backdrop-filter: blur(10px)
+      backdrop-filter: blur(15px);
+      animation: fadeIn 0.3s ease;
     }
+    .overlay.active { display: flex; }
 
-    #admin-overlay.active {
-      display: flex
-    }
+    #checkout-overlay { z-index: 10005; }
+    #upsell-overlay { z-index: 10010; }
+    #admin-login-overlay { z-index: 10020; }
 
-    .admin-modal {
+    .admin-card, .upsell-modal, .checkout-modal {
       background: var(--black);
       border: 2px solid var(--primary);
-      max-width: 450px;
       width: 100%;
       position: relative;
-      border-radius: 16px;
-      box-shadow: 0 0 50px rgba(var(--primary-rgb), 0.15);
-      padding: 30px
+      border-radius: 32px;
+      box-shadow: 0 0 100px rgba(var(--primary-rgb), 0.2);
+      overflow: hidden;
+      animation: modalScale .3s ease-out;
     }
+    .admin-card { max-width: 400px; padding: 40px 30px; text-align: center; }
+    .upsell-modal { max-width: 550px; }
+    .checkout-modal { max-width: 480px; }
+
+    @keyframes modalScale { from { transform: scale(.95); opacity: 0 } to { transform: scale(1); opacity: 1 } }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+    /* Estilos do Upsell */
+    .upsell-header { background: var(--accent-gradient); padding: 30px; text-align: center; color: var(--black); }
+    .upsell-body { padding: 30px; }
+    .upsell-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(var(--primary-rgb), 0.1); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-bottom: 15px; }
+    .upsell-items { margin: 20px 0; display: flex; flex-direction: column; gap: 15px; }
+    .upsell-item { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 16px; }
+    .upsell-item-icon { width: 44px; height: 44px; background: rgba(var(--primary-rgb), 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+    .upsell-item-text strong { display: block; font-size: 15px; color: var(--white); }
+    .upsell-item-text p { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .upsell-footer { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    
+    /* Login Admin */
+    .admin-login-icon { width: 70px; height: 70px; background: rgba(var(--primary-rgb), 0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; color: var(--primary); }
+
 
     .admin-modal h2 {
       font-family: 'Anton', sans-serif;
@@ -2477,13 +2500,13 @@
   </div>
 
   <!-- ===== CHECKOUT MODAL (PIX API) ===== -->
-    <div id="checkout-overlay">
-      <div class="checkout-modal">
-        <div class="checkout-header">
-          <button class="checkout-close" onclick="closeCheckout()">&times;</button>
-          <h2><iconify-icon icon="ph:qr-code-bold"></iconify-icon> PAGAMENTO PIX</h2>
-          <p><iconify-icon icon="ph:shield-check-fill"></iconify-icon> Ambiente Seguro • Aprovação instantânea</p>
-        </div>
+  <div id="checkout-overlay" class="overlay">
+    <div class="checkout-modal">
+      <div class="checkout-header">
+        <button class="checkout-close" onclick="closeCheckout()">&times;</button>
+        <h2><svg width="24" height="24" viewBox="0 0 256 256" style="fill:var(--white)"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,128a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h80A8,8,0,0,1,176,128Z"></path></svg> PAGAMENTO PIX</h2>
+        <p><svg width="14" height="14" viewBox="0 0 256 256" style="fill:var(--white)"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Zm-80-56a16,16,0,1,1-16-16A16,16,0,0,1,128,152Z"></path></svg> Ambiente Seguro • Aprovação instantânea</p>
+      </div>
         
         <div class="checkout-body">
           <!-- Etapa 1: Dados do Cliente -->
