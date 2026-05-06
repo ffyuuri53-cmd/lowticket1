@@ -1591,27 +1591,20 @@
       max-width: 480px;
       width: 100%;
       position: relative;
-      border-radius: 24px;
-      box-shadow: 0 0 80px rgba(var(--primary-rgb), 0.2);
+      border-radius: 32px;
+      box-shadow: 0 0 100px rgba(var(--primary-rgb), 0.2);
       overflow: hidden;
       animation: modalScale .3s ease-out
     }
 
     @keyframes modalScale {
-      from {
-        transform: scale(.9);
-        opacity: 0
-      }
-
-      to {
-        transform: scale(1);
-        opacity: 1
-      }
+      from { transform: scale(.95); opacity: 0 }
+      to { transform: scale(1); opacity: 1 }
     }
 
     .checkout-header {
       background: var(--accent-gradient);
-      padding: 25px;
+      padding: 30px;
       text-align: center;
       color: var(--black);
       position: relative
@@ -1619,31 +1612,42 @@
 
     .checkout-header h2 {
       font-family: 'Anton', sans-serif;
-      font-size: 24px;
+      font-size: 28px;
       text-transform: uppercase;
-      margin-bottom: 5px
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      line-height: 1
     }
 
     .checkout-header p {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      opacity: .8
+      opacity: 0.8;
+      margin-top: 5px;
+      letter-spacing: 0.5px
     }
 
     .checkout-body {
-      padding: 35px
+      padding: 35px;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column
     }
 
     .checkout-step {
-      display: none
+      display: none;
+      flex-direction: column;
+      animation: fadeIn 0.4s ease
     }
 
     .checkout-step.active {
-      display: block
+      display: flex
     }
 
     .checkout-input-group {
-      margin-bottom: 20px
+      margin-bottom: 22px
     }
 
     .checkout-input-group label {
@@ -1651,29 +1655,30 @@
       align-items: center;
       gap: 8px;
       font-size: 11px;
-      color: rgba(255, 255, 255, .6);
-      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 10px;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      font-weight: 600
+      font-weight: 700
     }
 
     .checkout-input {
       width: 100%;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(var(--primary-rgb), .15);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--white);
-      padding: 15px;
+      padding: 16px;
       border-radius: 12px;
       outline: none;
-      transition: all .3s;
-      font-family: 'Poppins', sans-serif
+      transition: all 0.3s;
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px
     }
 
     .checkout-input:focus {
       border-color: var(--primary);
       background: rgba(var(--primary-rgb), 0.05);
-      box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.1)
+      box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.15)
     }
 
     .pix-qr-container {
