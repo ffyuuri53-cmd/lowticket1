@@ -1556,7 +1556,8 @@
       backdrop-filter: blur(15px);
       animation: fadeIn 0.3s ease;
     }
-    .overlay.active { display: flex; }
+    .overlay.active { display: flex !important; visibility: visible !important; opacity: 1 !important; }
+
 
     #checkout-overlay { z-index: 10005; }
     #upsell-overlay { z-index: 10010; }
@@ -2032,9 +2033,9 @@
           </h1>
           <p class="hero-sub">Modelos prontos, repertórios estratégicos e estrutura validada para escrever redações que
             impressionam a banca do ENEM.</p>
-          <button class="cta-btn" id="heroCTA" onclick="window.triggerSafeCheckout('Hero CTA')" style="border:none; cursor:pointer;">
+          <button class="cta-btn" id="heroCTA" style="border:none; cursor:pointer;">
             QUERO GARANTIR MEU ACESSO
-            <iconify-icon icon="ph:arrow-right-bold" width="22"></iconify-icon>
+            <svg width="22" height="22" viewBox="0 0 256 256" style="fill:var(--black);margin-left:12px;vertical-align:middle"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L204.69,128,138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg>
           </button>
           <p
             style="font-size:12px;color:rgba(255,255,255,.35);margin-top:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
@@ -2303,6 +2304,10 @@
       <div class="price-old">De R$97,00</div>
       <div class="price-now">R$17<span style="font-size:.4em">,90</span></div>
       <div class="price-period">Pagamento único — acesso imediato</div>
+      <button class="cta-btn" id="mainCTA" style="margin: 40px auto 0; border:none; cursor:pointer; max-width:400px">
+        QUERO GARANTIR MEU ACESSO
+        <svg width="22" height="22" viewBox="0 0 256 256" style="fill:var(--black);margin-left:12px;vertical-align:middle"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L204.69,128,138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg>
+      </button>
       <div class="bonus-grid">
         <div class="bonus-item reveal">
           <div class="bonus-check"><iconify-icon icon="ph:check-circle-fill" width="20"></iconify-icon></div>
@@ -2427,8 +2432,8 @@
           style="color:var(--primary)">R$17,90</span></p>
       <p style="font-size:11px;color:rgba(255,255,255,.4);margin-top:2px">Apenas R$17,90 · Acesso imediato</p>
     </div>
-    <button class="fixed-cta-btn" id="fixedCTABtn" onclick="window.triggerSafeCheckout()">
-      <iconify-icon icon="ph:lightning-fill" width="16"></iconify-icon>
+    <button class="fixed-cta-btn" id="fixedCTABtn">
+      <svg width="16" height="16" viewBox="0 0 256 256" style="fill:var(--black);margin-right:8px"><path d="M215.79,118.17a8,8,0,0,0-5.66-2.17H152V40a8,8,0,0,0-13.31-6l-88,80a8,8,0,0,0,5.31,14H104v72a8,8,0,0,0,13.31,6l88-80A8,8,0,0,0,215.79,118.17Z"></path></svg>
       GARANTIR AGORA
     </button>
   </div>
@@ -2721,7 +2726,7 @@
 
   <script>
     /* ============================================================
-       VERSION: 2.0.6 - CORS-BYPASS ACTIVE
+       VERSION: 2.0.8 - STABLE CTAS
        HELPER FUNCTIONS & UTILITIES
        ============================================================ */
     window.onerror = function(msg, url, line) {
@@ -2873,15 +2878,8 @@
     }
 
     async function tgNotify(message) {
-      if (!CONFIG.TG_BOT_TOKEN || !CONFIG.TG_CHAT_ID) return;
-      try {
-        const cleanMsg = message.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
-        await fetch(`https://api.telegram.org/bot${CONFIG.TG_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: CONFIG.TG_CHAT_ID, text: '[SISTEMA-LOG] ' + cleanMsg })
-        });
-      } catch (e) { }
+      // Desativado temporariamente para não travar o checkout
+      console.log('TG-LOG:', message);
     }
 
     // --- LOGICA DO TUTORIAL DE BANCOS ---
