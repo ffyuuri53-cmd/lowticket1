@@ -2,137 +2,114 @@ import os
 import re
 import base64
 import telebot
+from telebot import types
 from urllib.parse import quote
 
 # CONFIGURAÇÕES
 FILEPATH = 'index.html'
-# Coloque seu Token aqui ou o script tentará ler do ambiente
-BOT_TOKEN = '8236778290:AAGXUQWm-D3lCoOAch7cgMEf-b4mm4XZ5Mk' 
+BOT_TOKEN = '8236778290:AAGXUQWm-D3lCoOAch7cgMEf-b4mm4XZ5Mk'
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
+# Dicionário temporário para estados (para saber o que o usuário está configurando)
+user_states = {}
+
 def encode_pass(password):
-    # Simula exatamente a funcao encodeURIComponent do JS usando safe=''
     encoded = quote(password, safe='')
     b64 = base64.b64encode(encoded.encode()).decode()
     return b64[::-1]
 
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(message, "🛠️ **Painel Admin Bot**\n\nComandos disponíveis:\n/senha <nova_senha> - Altera a senha do painel admin no site.")
-
-@bot.message_handler(commands=['senha'])
-@bot.channel_post_handler(commands=['senha'])
-def change_password(message):
+def git_sync(msg_id, message):
     try:
-        # No canal, o texto pode vir diferente
-        text = message.text if message.text else message.caption
-        if not text: return
-
-        parts = text.split(' ', 1)
-        if len(parts) < 2:
-            bot.reply_to(message, "⚠️ Uso correto: `/senha 123456`", parse_mode='Markdown')
-            return
-        
-        new_pass = parts[1].strip()
-        encoded = encode_pass(new_pass)
-        
-        if not os.path.exists(FILEPATH):
-            bot.reply_to(message, f"❌ Erro: Arquivo `{FILEPATH}` não encontrado.", parse_mode='Markdown')
-            return
-            
-        with open(FILEPATH, 'r', encoding='utf-8') as f:
-            content = f.read()
-            
-        # Regex ultra-simplificado para encontrar _p = '...'; ou _p = "...";
-        pattern = r'_p\s*=\s*[\'"](.*?)[\'"]'
-        if not re.search(pattern, content):
-            bot.reply_to(message, "⚠️ Erro: Variável _p não encontrada no arquivo index.html")
-            return
-            
-        new_content = re.sub(pattern, f"_p = '{encoded}'", content)
-            
-        with open(FILEPATH, 'w', encoding='utf-8') as f:
-            f.write(new_content)
-            
-        # SINCRONIZAÇÃO COM GITHUB (Para Netlify atualizar)
-        try:
-            os.system('git add index.html')
-            os.system('git commit -m "Auto-update password from Telegram Bot"')
-            os.system('git push origin main')
-            sync_msg = "\n\n🚀 **Sincronizado com Netlify!** O site estará atualizado em instantes."
-        except:
-            sync_msg = "\n\n⚠️ Erro ao sincronizar com GitHub. Verifique as credenciais no terminal."
-
-        bot.reply_to(message, f"✅ **Senha alterada com sucesso!**\n\nNova senha: `{new_pass}`\nHash: `{encoded}`{sync_msg}", parse_mode='Markdown')
-        
+        os.system('git add index.html')
+        os.system('git commit -m "Auto-update from Telegram Bot"')
+        os.system('git push origin main')
+        bot.send_message(message.chat.id, "🚀 **Sincronizado com Netlify!** As mudanças estarão no ar em instantes.", parse_mode='Markdown')
     except Exception as e:
-        bot.reply_to(message, f"❌ Erro ao processar: {str(e)}")
+        bot.send_message(message.chat.id, f"⚠️ Erro ao sincronizar com GitHub: {e}")
 
-@bot.message_handler(commands=['keys'])
-def set_keys(message):
+def create_main_menu():
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("🔑 Configurar Sync Pay", callback_data="set_sync"),
+        types.InlineKeyboardButton("💰 Alterar Preço", callback_data="set_price"),
+        types.InlineKeyboardButton("📸 Alterar Instagram", callback_data="set_ig"),
+        types.InlineKeyboardButton("🔒 Mudar Senha Admin", callback_data="set_pass"),
+        types.InlineKeyboardButton("🔄 Sincronizar Agora", callback_data="force_sync")
+    )
+    return markup
+
+@bot.message_handler(commands=['start', 'admin', 'menu'])
+def send_welcome(message):
+    bot.send_message(message.chat.id, "🛠️ **Painel de Controle Elite**\nEscolha uma ação para configurar o seu site:", 
+                     reply_markup=create_main_menu(), parse_mode='Markdown')
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    chat_id = call.message.chat.id
+    if call.data == "set_sync":
+        bot.send_message(chat_id, "➡️ Digite o seu **Client ID** da Sync Pay:")
+        user_states[chat_id] = 'WAITING_SYNC_ID'
+    elif call.data == "set_price":
+        bot.send_message(chat_id, "➡️ Digite o novo **Preço** (ex: 19,90):")
+        user_states[chat_id] = 'WAITING_PRICE'
+    elif call.data == "set_ig":
+        bot.send_message(chat_id, "➡️ Digite o novo link do **Instagram**:")
+        user_states[chat_id] = 'WAITING_IG'
+    elif call.data == "set_pass":
+        bot.send_message(chat_id, "➡️ Digite a nova **Senha Admin**:")
+        user_states[chat_id] = 'WAITING_PASS'
+    elif call.data == "force_sync":
+        git_sync(None, call.message)
+    
+    bot.answer_callback_query(call.id)
+
+@bot.message_handler(func=lambda message: message.chat.id in user_states)
+def handle_inputs(message):
+    chat_id = message.chat.id
+    state = user_states.get(chat_id)
+    text = message.text.strip()
+    
     try:
-        parts = message.text.split()
-        if len(parts) < 3:
-            bot.reply_to(message, "⚠️ Uso: `/keys API_KEY TOKEN`", parse_mode='Markdown')
-            return
-        
-        key, token = parts[1], parts[2]
         with open(FILEPATH, 'r', encoding='utf-8') as f: content = f.read()
         
-        content = re.sub(r"SYNC_KEY: '.*?'", f"SYNC_KEY: '{key}'", content)
-        content = re.sub(r"SYNC_TOKEN: '.*?'", f"SYNC_TOKEN: '{token}'", content)
-        
-        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
-        os.system('git add index.html; git commit -m "Update API Keys"; git push origin main')
-        bot.reply_to(message, "✅ **Chaves Sync Pay atualizadas e sincronizadas!**", parse_mode='Markdown')
-    except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
-
-@bot.message_handler(commands=['preco'])
-def set_price(message):
-    try:
-        parts = message.text.split(maxsplit=1)
-        if len(parts) < 2:
-            bot.reply_to(message, "⚠️ Uso: `/preco 19,90`", parse_mode='Markdown')
+        if state == 'WAITING_SYNC_ID':
+            user_states[chat_id] = f'WAITING_SYNC_TOKEN|{text}'
+            bot.send_message(chat_id, f"✅ Client ID recebido.\n➡️ Agora digite o seu **Client Secret** (Token):")
             return
-        
-        price = parts[1].strip()
-        with open(FILEPATH, 'r', encoding='utf-8') as f: content = f.read()
-        content = re.sub(r"PRICE_MAIN: '.*?'", f"PRICE_MAIN: '{price}'", content)
-        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
-        os.system('git add index.html; git commit -m "Update Price"; git push origin main')
-        bot.reply_to(message, f"✅ **Preço alterado para R${price}!**", parse_mode='Markdown')
-    except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
 
-@bot.message_handler(commands=['instagram'])
-def set_ig(message):
-    try:
-        parts = message.text.split(maxsplit=1)
-        if len(parts) < 2:
-            bot.reply_to(message, "⚠️ Uso: `/instagram https://ig.me/...`", parse_mode='Markdown')
-            return
-        
-        url = parts[1].strip()
-        with open(FILEPATH, 'r', encoding='utf-8') as f: content = f.read()
-        content = re.sub(r"INSTAGRAM_URL: '.*?'", f"INSTAGRAM_URL: '{url}'", content)
-        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
-        os.system('git add index.html; git commit -m "Update IG Link"; git push origin main')
-        bot.reply_to(message, f"✅ **Instagram atualizado!**", parse_mode='Markdown')
-    except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
+        elif state.startswith('WAITING_SYNC_TOKEN|'):
+            client_id = state.split('|')[1]
+            content = re.sub(r"SYNC_KEY: '.*?'", f"SYNC_KEY: '{client_id}'", content)
+            content = re.sub(r"SYNC_TOKEN: '.*?'", f"SYNC_TOKEN: '{text}'", content)
+            bot.send_message(chat_id, "⏳ Gravando chaves e sincronizando...")
+            
+        elif state == 'WAITING_PRICE':
+            content = re.sub(r"PRICE_MAIN: '.*?'", f"PRICE_MAIN: '{text}'", content)
+            bot.send_message(chat_id, f"⏳ Alterando preço para R${text}...")
+            
+        elif state == 'WAITING_IG':
+            content = re.sub(r"INSTAGRAM_URL: '.*?'", f"INSTAGRAM_URL: '{text}'", content)
+            bot.send_message(chat_id, f"⏳ Atualizando Instagram...")
+            
+        elif state == 'WAITING_PASS':
+            encoded = encode_pass(text)
+            pattern = r'_p\s*=\s*[\'"](.*?)[\'"]'
+            content = re.sub(pattern, f"_p = '{encoded}'", content)
+            bot.send_message(chat_id, f"⏳ Alterando senha admin...")
 
+        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
+        git_sync(None, message)
+        del user_states[chat_id]
+        bot.send_message(chat_id, "✅ Operação concluída com sucesso!", reply_markup=create_main_menu())
+
+    except Exception as e:
+        bot.send_message(chat_id, f"❌ Erro: {e}")
+        del user_states[chat_id]
 
 if __name__ == "__main__":
     print("-" * 30)
-    print("BOT DE ADMINISTRACAO ELITE")
+    print("BOT DE AÇÕES INTERATIVAS")
     print(f"Monitorando: {FILEPATH}")
-    print(f"Token: {BOT_TOKEN[:10]}...")
     print("-" * 30)
-    
-    try:
-        me = bot.get_me()
-        print(f"Bot Online: @{me.username}")
-        print("Aguardando comandos (/start, /senha)...")
-        bot.infinity_polling()
-    except Exception as e:
-        print(f"ERRO FATAL AO INICIAR BOT: {str(e)}")
-        print("Verifique se o BOT_TOKEN esta correto e se ha conexao com a internet.")
+    bot.infinity_polling()
