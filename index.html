@@ -1765,27 +1765,58 @@
       transform: scale(1.02)
     }
 
-    .payment-tutorial {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
+    /* TUTORIAL 3D STYLES */
+    .payment-tutorial-3d {
+      margin-top: 30px;
       padding: 20px;
-      margin-top: 25px;
-      text-align: left
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05)
     }
 
-    .tutorial-step {
-      display: flex;
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 12px;
-      margin-bottom: 12px;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.4
+      margin-top: 15px
     }
 
-    .tutorial-step strong {
-      color: var(--primary);
-      flex-shrink: 0
+    .step-card {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 15px 10px;
+      border-radius: 16px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.3s ease
+    }
+
+    .step-card:hover {
+      transform: translateY(-5px);
+      background: rgba(var(--primary-rgb), 0.05);
+      border-color: rgba(var(--primary-rgb), 0.2)
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: var(--black);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      margin: 0 auto 10px;
+      box-shadow: 0 5px 15px rgba(var(--primary-rgb), 0.3)
+    }
+
+    .step-card p {
+      font-size: 10px;
+      color: var(--white);
+      font-weight: 600;
+      line-height: 1.3;
+      opacity: 0.8
     }
 
     .pix-qr-container {
@@ -2425,22 +2456,28 @@
               </div>
             </div>
 
-            <div class="payment-tutorial">
-              <h4 style="font-family:'Anton', sans-serif; font-size: 16px; color: var(--primary); margin-bottom: 18px; text-align:center;">PASSO A PASSO PARA PAGAR:</h4>
-              <div class="tutorial-step">
-                <strong>1.</strong> <p>Copie o código PIX clicando no botão acima.</p>
-              </div>
-              <div class="tutorial-step">
-                <strong>2.</strong> <p>Abra o app do seu banco e vá em <b>Pix Copia e Cola</b>.</p>
-              </div>
-              <div class="tutorial-step">
-                <strong>3.</strong> <p>Cole o código, confirme o pagamento e receba o acesso!</p>
+            <!-- TUTORIAL 3D PREMIUM -->
+            <div class="payment-tutorial-3d">
+              <h4 style="font-family:'Anton', sans-serif; font-size: 16px; color: var(--primary); margin-bottom: 20px; text-align:center; letter-spacing: 1px;">COMO ACESSAR SEU MATERIAL:</h4>
+              <div class="steps-grid">
+                <div class="step-card">
+                  <div class="step-number">1</div>
+                  <p>Copie o código PIX acima</p>
+                </div>
+                <div class="step-card">
+                  <div class="step-number">2</div>
+                  <p>Pague no App do seu Banco</p>
+                </div>
+                <div class="step-card">
+                  <div class="step-number">3</div>
+                  <p>Acesso liberado na hora!</p>
+                </div>
               </div>
             </div>
 
             <p style="text-align:center; font-size:11px; color:rgba(255,255,255,.3); margin-top:25px; display:flex; align-items:center; justify-content:center; gap:6px;">
               <iconify-icon icon="ph:lock-fill" style="color:var(--primary)"></iconify-icon>
-              Pagamento 100% seguro via Sync Pay.
+              Pagamento Seguro via Sync Pay.
             </p>
           </div>
         </div>
@@ -2805,14 +2842,17 @@
 
       const loader = document.getElementById('loading-overlay'); loader.classList.add('active');
       try {
-        // --- MODO DE SIMULAÇÃO (Para Testes) ---
-        if (CONFIG.SYNC_KEY === 'DEMO') {
+        // --- MODO DE SIMULACAO (Para Testes) ---
+        if (CONFIG.SYNC_KEY === 'DEMO' || CONFIG.SYNC_KEY === 'teste') {
           const fakePix = "00020101021226850014br.gov.bcb.pix0136e29381-80f0-466d-8a62-23f2f093123c520400005303986540517.905802BR5915EDUZ_TECNOLOGIA6009SAO_PAULO62070503***6304E22A";
           document.getElementById('pix-code').textContent = fakePix;
           document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fakePix)}`;
-          document.getElementById('step-info').classList.remove('active'); 
+          
+          // Forcar a troca de tela
+          document.getElementById('step-info').classList.remove('active');
           document.getElementById('step-payment').classList.add('active');
-          showSystemToast('MODO DEMO', 'Gerando pagamento de teste...', 'warning');
+          
+          showSystemToast('MODO DEMO', 'Simulando geracao de PIX...', 'warning');
           return;
         }
 
@@ -2832,7 +2872,11 @@
         if (pixCode) {
           document.getElementById('pix-code').textContent = pixCode;
           document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
-          document.getElementById('step-info').classList.remove('active'); document.getElementById('step-payment').classList.add('active');
+          
+          // Transicao de tela
+          document.getElementById('step-info').classList.remove('active');
+          document.getElementById('step-payment').classList.add('active');
+          
           tgNotify(`⚡ <b>PIX GERADO</b>\n👤 ${name}\n📧 ${email}\n🆔 ${getSessionId()}`);
           document.getElementById('pix-copy-btn').onclick = () => { navigator.clipboard.writeText(pixCode); showSystemToast('COPIADO', 'Código PIX pronto!'); };
         } else { throw new Error(data.message || "Erro API."); }
