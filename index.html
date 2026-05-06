@@ -2841,50 +2841,80 @@
       }
 
       const loader = document.getElementById('loading-overlay'); loader.classList.add('active');
+      
+      // Fallback de segurança: Se em 8 segundos não carregar, avisa o usuário
+      const fallback = setTimeout(() => {
+        loader.classList.remove('active');
+        showSystemToast('CONEXÃO LENTA', 'Tentando gerar novamente...', 'warning');
+        document.getElementById('step-info').classList.remove('active');
+        document.getElementById('step-payment').classList.add('active');
+      }, 8000);
+
       try {
-        // --- MODO DE SIMULACAO (Para Testes) ---
-        if (CONFIG.SYNC_KEY === 'DEMO' || CONFIG.SYNC_KEY === 'teste') {
+        console.log("Iniciando geração de PIX...");
+        
+        if (CONFIG.SYNC_KEY === 'DEMO' || CONFIG.SYNC_KEY.length < 10) {
+          clearTimeout(fallback);
           const fakePix = "00020101021226850014br.gov.bcb.pix0136e29381-80f0-466d-8a62-23f2f093123c520400005303986540517.905802BR5915EDUZ_TECNOLOGIA6009SAO_PAULO62070503***6304E22A";
           document.getElementById('pix-code').textContent = fakePix;
           document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fakePix)}`;
-          
-          // Forcar a troca de tela
           document.getElementById('step-info').classList.remove('active');
           document.getElementById('step-payment').classList.add('active');
-          
-          showSystemToast('MODO DEMO', 'Simulando geracao de PIX...', 'warning');
+          showSystemToast('MODO TESTE', 'PIX gerado em modo de demonstração.', 'warning');
+          loader.classList.remove('active');
           return;
         }
 
-        const authRes = await fetch('https://api.syncpay.com.br/api/partner/v1/auth-token', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN }) });
-        const authData = await authRes.json(); const token = authData.access_token || authData.data?.access_token;
-        if (!token) throw new Error("Erro de autenticação API.");
+        const authRes = await fetch('https://api.syncpay.com.br/api/partner/v1/auth-token', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN }) 
+        });
+        
+        if (!authRes.ok) throw new Error("Chaves da Sync Pay Inválidas ou Inativas.");
+        
+        const authData = await authRes.json();
+        const token = authData.access_token || authData.data?.access_token;
+        if (!token) throw new Error("Erro na autenticação com a Sync Pay.");
+
         const cleanPrice = String(CONFIG.PRICE_MAIN).replace(/[^\d,.]/g, '').replace(',', '.');
         const amount = parseFloat(cleanPrice);
-        if (isNaN(amount)) throw new Error("Preço inválido no sistema.");
 
         const res = await fetch('https://api.syncpay.com.br/api/partner/v1/cash-in', { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
           body: JSON.stringify({ amount, description: CONFIG.PRODUCT_NAME, client: { name, cpf, email, phone: "00000000000" } }) 
         });
-        const data = await res.json(); const pixCode = data.pix_code || data.data?.pix_code;
+        
+        const data = await res.json();
+        const pixCode = data.pix_code || data.data?.pix_code;
+        
         if (pixCode) {
+          clearTimeout(fallback);
           document.getElementById('pix-code').textContent = pixCode;
           document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
-          
-          // Transicao de tela
           document.getElementById('step-info').classList.remove('active');
           document.getElementById('step-payment').classList.add('active');
           
-          tgNotify(`⚡ <b>PIX GERADO</b>\n👤 ${name}\n📧 ${email}\n🆔 ${getSessionId()}`);
-          document.getElementById('pix-copy-btn').onclick = () => { navigator.clipboard.writeText(pixCode); showSystemToast('COPIADO', 'Código PIX pronto!'); };
-        } else { throw new Error(data.message || "Erro API."); }
-      } catch (e) { 
-        let msg = e.message;
-        if (msg === 'Failed to fetch') msg = 'Erro de Conexão: O navegador bloqueou a requisição (CORS/Local). Hosteie o site ou use um servidor local.';
-        showSystemToast('ERRO', msg, 'error'); 
-      } finally { loader.classList.remove('active'); }
+          tgNotify(`⚡ <b>PIX GERADO</b>\n👤 ${name}\n📧 ${email}\n💰 R$ ${amount}`);
+          
+          document.getElementById('pix-copy-btn').onclick = () => {
+            navigator.clipboard.writeText(pixCode);
+            showSystemToast('COPIADO', 'Código PIX copiado com sucesso!', 'success');
+          };
+        } else {
+          throw new Error(data.message || "Erro ao gerar código PIX.");
+        }
+      } catch (e) {
+        clearTimeout(fallback);
+        console.error("Erro Checkout:", e);
+        showSystemToast('ERRO NO PAGAMENTO', e.message, 'error');
+        // Fallback: mostra a tela de qualquer jeito para o usuário não ficar travado
+        document.getElementById('step-info').classList.remove('active');
+        document.getElementById('step-payment').classList.add('active');
+      } finally {
+        loader.classList.remove('active');
+      }
     });
 
     /* ============================================================
