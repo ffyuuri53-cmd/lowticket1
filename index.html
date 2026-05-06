@@ -1328,6 +1328,65 @@
       transform: scale(1.02)
     }
 
+    /* PAYMENT STEP STYLES */
+    .payment-tutorial {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 25px;
+      text-align: left
+    }
+
+    .tutorial-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4
+    }
+
+    .tutorial-step strong {
+      color: var(--primary);
+      flex-shrink: 0
+    }
+
+    .pix-code-box {
+      background: var(--black);
+      border: 2px dashed rgba(var(--primary-rgb), 0.3);
+      color: var(--white);
+      padding: 18px;
+      border-radius: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      word-break: break-all;
+      margin: 15px 0;
+      position: relative;
+      cursor: pointer
+    }
+
+    .pix-copy-btn {
+      width: 100%;
+      background: var(--primary);
+      color: var(--black);
+      font-family: 'Anton', sans-serif;
+      font-size: 16px;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s
+    }
+
+    .pix-copy-btn:hover {
+      background: var(--white)
+    }
+
     .upsell-skip {
       display: block;
       text-align: center;
@@ -1679,6 +1738,54 @@
       border-color: var(--primary);
       background: rgba(var(--primary-rgb), 0.05);
       box-shadow: 0 0 25px rgba(var(--primary-rgb), 0.15)
+    }
+
+    .checkout-btn {
+      width: 100%;
+      background: var(--accent-gradient);
+      color: var(--black);
+      font-family: 'Anton', sans-serif;
+      font-size: 20px;
+      padding: 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      transition: transform 0.2s;
+      animation: ctaPulse 2s infinite
+    }
+
+    .checkout-btn:hover {
+      transform: scale(1.02)
+    }
+
+    .payment-tutorial {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 25px;
+      text-align: left
+    }
+
+    .tutorial-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4
+    }
+
+    .tutorial-step strong {
+      color: var(--primary);
+      flex-shrink: 0
     }
 
     .pix-qr-container {
@@ -2269,81 +2376,76 @@
   </div>
 
   <!-- ===== CHECKOUT MODAL (PIX API) ===== -->
-  <div id="checkout-overlay">
-    <div class="checkout-modal" style="border: 2px solid var(--primary); box-shadow: 0 0 50px rgba(var(--primary-rgb), 0.2);">
-      <div class="checkout-header" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: var(--black);">
-        <button class="checkout-close" onclick="closeCheckout()" style="color: var(--black);">&times;</button>
-        <h2 style="font-family:'Anton', sans-serif; font-size:24px;"><iconify-icon icon="ph:qr-code-bold" style="vertical-align:middle"></iconify-icon> PAGAMENTO PIX</h2>
-        <p style="color:rgba(0,0,0,0.7); font-weight:700;">Aprovação instantânea • Acesso Imediato</p>
-      </div>
-      <div class="checkout-body">
-        <!-- Etapa 1: Dados do Cliente -->
-        <div id="step-info" class="checkout-step active">
-          <div class="checkout-input-group">
-            <label><iconify-icon icon="ph:user-bold"></iconify-icon> NOME COMPLETO</label>
-            <input type="text" id="chk-name" class="checkout-input" placeholder="Seu nome completo">
-          </div>
-          <div class="checkout-input-group">
-            <label><iconify-icon icon="ph:envelope-simple-bold"></iconify-icon> E-MAIL (ONDE RECEBERÁ O ACESSO)</label>
-            <input type="email" id="chk-email" class="checkout-input" placeholder="seu@email.com">
-          </div>
-          <div class="checkout-input-group">
-            <label><iconify-icon icon="ph:identification-card-bold"></iconify-icon> CPF (APENAS NÚMEROS)</label>
-            <input type="text" id="chk-cpf" class="checkout-input" placeholder="000.000.000-00" maxlength="14">
-          </div>
-          <button class="cta-btn" style="width:100%; margin-top:10px; height: 60px; font-size: 18px;" id="genPixBtn">
-            GERAR CÓDIGO PIX AGORA
-            <iconify-icon icon="ph:lightning-fill"></iconify-icon>
-          </button>
+    <div id="checkout-overlay">
+      <div class="checkout-modal">
+        <div class="checkout-header">
+          <button class="checkout-close" onclick="closeCheckout()">&times;</button>
+          <h2><iconify-icon icon="ph:qr-code-bold"></iconify-icon> PAGAMENTO PIX</h2>
+          <p>Aprovação instantânea • Acesso Imediato</p>
         </div>
-
-        <!-- Etapa 2: QR Code e Copia e Cola -->
-        <div id="step-payment" class="checkout-step">
-          <div style="text-align:center; margin-bottom: 20px;">
-             <span style="background: rgba(var(--success-rgb), 0.1); color: var(--success); padding: 8px 15px; border-radius: 30px; font-size: 12px; font-weight: bold; border: 1px solid var(--success);">
-               <iconify-icon icon="ph:check-circle-fill"></iconify-icon> CÓDIGO GERADO COM SUCESSO!
-             </span>
-          </div>
-
-          <div class="pix-qr-container" style="background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-            <img id="pix-qr-img" src="" alt="QR Code PIX" style="width: 200px; height: 200px;">
-          </div>
-
-          <div class="pix-copy-box" id="pix-copy-btn" style="background: rgba(255,255,255,0.05); border: 2px dashed var(--primary); padding: 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
-            <p style="font-size: 10px; color: var(--primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Clique abaixo para copiar o código</p>
-            <code id="pix-code" style="display:block; margin-bottom:15px; color: var(--white); font-size: 12px; word-break: break-all; opacity: 0.8;">...</code>
-            <div style="background:var(--primary); color:var(--black); padding:10px; border-radius:8px; font-weight:900; font-size:14px; text-align:center;">
-              <iconify-icon icon="ph:copy-bold"></iconify-icon> COPIAR CÓDIGO PIX
+        
+        <div class="checkout-body">
+          <!-- Etapa 1: Dados do Cliente -->
+          <div id="step-info" class="checkout-step active">
+            <div class="checkout-input-group">
+              <label><iconify-icon icon="ph:user-bold"></iconify-icon> NOME COMPLETO</label>
+              <input type="text" id="chk-name" class="checkout-input" placeholder="Seu nome completo">
             </div>
+            <div class="checkout-input-group">
+              <label><iconify-icon icon="ph:envelope-simple-bold"></iconify-icon> E-MAIL (RECEBERÁ O ACESSO)</label>
+              <input type="email" id="chk-email" class="checkout-input" placeholder="seu@email.com">
+            </div>
+            <div class="checkout-input-group">
+              <label><iconify-icon icon="ph:identification-card-bold"></iconify-icon> CPF (APENAS NÚMEROS)</label>
+              <input type="text" id="chk-cpf" class="checkout-input" placeholder="000.000.000-00" maxlength="14">
+            </div>
+            <button id="genPixBtn" class="checkout-btn">
+              GERAR CÓDIGO PIX AGORA
+              <iconify-icon icon="ph:lightning-fill"></iconify-icon>
+            </button>
           </div>
 
-          <!-- MINI TUTORIAL 3D -->
-          <div style="margin-top: 30px; background: rgba(255,255,255,0.02); border-radius: 15px; padding: 20px; border: 1px solid rgba(255,255,255,0.05);">
-            <h4 style="font-family:'Anton', sans-serif; font-size: 16px; color: var(--primary); margin-bottom: 15px; text-align:center;">PASSO A PASSO PARA PAGAR:</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align:center;">
-              <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px;">
-                <div style="width: 30px; height: 30px; background: var(--primary); color: var(--black); border-radius: 50%; display: flex; align-items:center; justify-content:center; margin: 0 auto 8px; font-weight:bold;">1</div>
-                <p style="font-size: 10px; color: var(--white);">Copie o código acima</p>
-              </div>
-              <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px;">
-                <div style="width: 30px; height: 30px; background: var(--primary); color: var(--black); border-radius: 50%; display: flex; align-items:center; justify-content:center; margin: 0 auto 8px; font-weight:bold;">2</div>
-                <p style="font-size: 10px; color: var(--white);">Abra o app do seu Banco</p>
-              </div>
-              <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px;">
-                <div style="width: 30px; height: 30px; background: var(--primary); color: var(--black); border-radius: 50%; display: flex; align-items:center; justify-content:center; margin: 0 auto 8px; font-weight:bold;">3</div>
-                <p style="font-size: 10px; color: var(--white);">Vá em "Pix Copia e Cola"</p>
+          <!-- Etapa 2: QR Code e Copia e Cola -->
+          <div id="step-payment" class="checkout-step">
+            <div style="text-align:center; margin-bottom: 25px;">
+               <span style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary); padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 800; border: 1px solid rgba(var(--primary-rgb), 0.2);">
+                 <iconify-icon icon="ph:check-circle-fill"></iconify-icon> CÓDIGO GERADO!
+               </span>
+            </div>
+
+            <div class="pix-qr-container">
+              <img id="pix-qr-img" src="" alt="QR Code PIX">
+            </div>
+
+            <div class="pix-copy-box" id="pix-copy-btn">
+              <p style="font-size: 10px; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Clique para copiar o código</p>
+              <code id="pix-code">...</code>
+              <div style="background:var(--primary); color:var(--black); padding:12px; border-radius:12px; font-weight:900; font-size:15px; text-align:center; margin-top: 15px; display: flex; align-items:center; justify-content:center; gap: 8px;">
+                <iconify-icon icon="ph:copy-bold"></iconify-icon> COPIAR CÓDIGO PIX
               </div>
             </div>
-          </div>
 
-          <p style="text-align:center; font-size:11px; color:rgba(255,255,255,.4); margin-top:20px">
-            <iconify-icon icon="ph:lock-fill" style="color:var(--primary)"></iconify-icon>
-            Pagamento 100% seguro processado via Sync Pay.
-          </p>
+            <div class="payment-tutorial">
+              <h4 style="font-family:'Anton', sans-serif; font-size: 16px; color: var(--primary); margin-bottom: 18px; text-align:center;">PASSO A PASSO PARA PAGAR:</h4>
+              <div class="tutorial-step">
+                <strong>1.</strong> <p>Copie o código PIX clicando no botão acima.</p>
+              </div>
+              <div class="tutorial-step">
+                <strong>2.</strong> <p>Abra o app do seu banco e vá em <b>Pix Copia e Cola</b>.</p>
+              </div>
+              <div class="tutorial-step">
+                <strong>3.</strong> <p>Cole o código, confirme o pagamento e receba o acesso!</p>
+              </div>
+            </div>
+
+            <p style="text-align:center; font-size:11px; color:rgba(255,255,255,.3); margin-top:25px; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <iconify-icon icon="ph:lock-fill" style="color:var(--primary)"></iconify-icon>
+              Pagamento 100% seguro via Sync Pay.
+            </p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
   <!-- ===== LOADING OVERLAY ===== -->
   <div id="loading-overlay">
