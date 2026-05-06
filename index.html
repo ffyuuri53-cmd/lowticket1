@@ -8,9 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;600;700;900&display=swap"
     rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js">
-
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -1689,10 +1688,12 @@
     }
 
     .checkout-body {
-      padding: 35px;
-      min-height: 420px;
+      padding: 25px 30px;
+      max-height: calc(90vh - 120px);
+      overflow-y: auto;
       display: flex;
-      flex-direction: column
+      flex-direction: column;
+      scroll-behavior: smooth;
     }
 
     .checkout-step {
@@ -1988,10 +1989,10 @@
           </h1>
           <p class="hero-sub">Modelos prontos, repertórios estratégicos e estrutura validada para escrever redações que
             impressionam a banca do ENEM.</p>
-          <a href="#oferta" class="cta-btn" id="heroCTA">
+          <button class="cta-btn" id="heroCTA" onclick="openCheckout('Hero CTA')" style="border:none; cursor:pointer;">
             QUERO GARANTIR MEU ACESSO
             <iconify-icon icon="ph:arrow-right-bold" width="22"></iconify-icon>
-          </a>
+          </button>
           <p
             style="font-size:12px;color:rgba(255,255,255,.35);margin-top:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
             <span style="display:flex;align-items:center;gap:4px"><iconify-icon icon="ph:check-circle-fill" width="14"
@@ -2497,61 +2498,69 @@
 
           <!-- Etapa 2: QR Code e Copia e Cola -->
           <div id="step-payment" class="checkout-step">
-            <div style="text-align:center; margin-bottom: 20px;">
+            <div style="text-align:center; margin-bottom: 16px;">
                <span style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary); padding: 8px 15px; border-radius: 30px; font-size: 11px; font-weight: 800; border: 1px solid rgba(var(--primary-rgb), 0.2);">
                  <iconify-icon icon="ph:check-circle-fill"></iconify-icon> PIX GERADO COM SUCESSO!
                </span>
             </div>
 
-            <div class="pix-qr-container" style="background:white; padding:15px; border-radius:18px; margin:0 auto 20px; width:200px; height:200px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-              <img id="pix-qr-img" src="" alt="QR Code PIX" style="width:170px; height:170px; display: block;">
+            <!-- QR Code gerado localmente via qrcode.js -->
+            <div style="background:white; padding:12px; border-radius:18px; margin:0 auto 16px; width:190px; height:190px; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+              <canvas id="pix-qr-canvas" style="width:166px; height:166px;"></canvas>
             </div>
 
-            <div class="pix-copy-box" id="pix-copy-btn" style="background:rgba(255,255,255,0.03); border:2px dashed var(--primary); padding:18px; border-radius:15px; cursor:pointer; text-align:center; transition:0.3s; margin-bottom: 25px;">
-              <p style="font-size:10px; color:var(--primary); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; font-weight:800;">Clique para copiar o código</p>
-              <code id="pix-code" style="display:block; font-size:11px; color:var(--white); opacity:0.7; word-break:break-all; margin-bottom:12px; font-family: monospace;">...</code>
-              <div style="background:var(--primary); color:var(--black); padding:12px; border-radius:10px; font-weight:900; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <!-- Botão Copiar e Cola -->
+            <div id="pix-copy-btn" style="background:rgba(255,255,255,0.03); border:2px dashed var(--primary); padding:14px; border-radius:15px; cursor:pointer; text-align:center; transition:all 0.3s; margin-bottom: 16px;" onclick="copyPixCode()">
+              <p style="font-size:10px; color:var(--primary); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; font-weight:800;"><iconify-icon icon="ph:copy-bold"></iconify-icon> Clique para copiar o código PIX</p>
+              <code id="pix-code" style="display:block; font-size:10px; color:var(--white); opacity:0.55; word-break:break-all; margin-bottom:10px; font-family: monospace; max-height:36px; overflow:hidden;">...</code>
+              <div id="copy-btn-label" style="background:var(--primary); color:var(--black); padding:10px; border-radius:10px; font-weight:900; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;">
                 <iconify-icon icon="ph:copy-bold"></iconify-icon> COPIAR CÓDIGO PIX
               </div>
             </div>
 
-            <!-- TUTORIAL DE BANCOS INTERATIVO -->
-            <div class="bank-tabs" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 15px;">
-              <div class="bank-tab active" id="tab-nubank" onclick="toggleBank('nubank')" style="cursor: pointer; padding: 10px; background: rgba(130, 10, 209, 0.1); border-radius: 12px; border: 1px solid rgba(130, 10, 209, 0.3);">
-                <iconify-icon icon="ph:bank-fill" width="30" style="color:#820ad1"></iconify-icon>
+            <!-- TUTORIAL COM IMAGEM + TABS DE BANCOS -->
+            <div style="margin-bottom:12px;">
+              <p style="font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; font-weight:700; text-align:center; margin-bottom:8px;">Como pagar passo a passo:</p>
+              <img src="assets/pix_tutorial.png" alt="Tutorial PIX" style="width:100%; border-radius:12px; border:1px solid rgba(255,212,0,0.15);">
+            </div>
+
+            <!-- TABS DE BANCOS -->
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.05);">
+              <div class="bank-tab active" id="tab-nubank" onclick="toggleBank('nubank')" style="cursor:pointer; padding:8px 12px; background:rgba(130,10,209,0.1); border-radius:10px; border:1px solid rgba(130,10,209,0.3); display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.7);">
+                <iconify-icon icon="ph:bank-fill" width="18" style="color:#820ad1"></iconify-icon> Nubank
               </div>
-              <div class="bank-tab" id="tab-inter" onclick="toggleBank('inter')" style="cursor: pointer; padding: 10px; background: rgba(255, 122, 0, 0.1); border-radius: 12px; border: 1px solid rgba(255, 122, 0, 0.3);">
-                <iconify-icon icon="ph:wallet-fill" width="30" style="color:#ff7a00"></iconify-icon>
+              <div class="bank-tab" id="tab-inter" onclick="toggleBank('inter')" style="cursor:pointer; padding:8px 12px; background:rgba(255,122,0,0.1); border-radius:10px; border:1px solid rgba(255,122,0,0.3); display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.7);">
+                <iconify-icon icon="ph:wallet-fill" width="18" style="color:#ff7a00"></iconify-icon> Inter
               </div>
-              <div class="bank-tab" id="tab-santander" onclick="toggleBank('santander')" style="cursor: pointer; padding: 10px; background: rgba(236, 0, 0, 0.1); border-radius: 12px; border: 1px solid rgba(236, 0, 0, 0.3);">
-                <iconify-icon icon="ph:credit-card-fill" width="30" style="color:#ec0000"></iconify-icon>
+              <div class="bank-tab" id="tab-itau" onclick="toggleBank('itau')" style="cursor:pointer; padding:8px 12px; background:rgba(0,82,204,0.1); border-radius:10px; border:1px solid rgba(0,82,204,0.3); display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.7);">
+                <iconify-icon icon="ph:credit-card-fill" width="18" style="color:#0052cc"></iconify-icon> Itaú
+              </div>
+              <div class="bank-tab" id="tab-outros" onclick="toggleBank('outros')" style="cursor:pointer; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:10px; border:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:rgba(255,255,255,0.7);">
+                <iconify-icon icon="ph:buildings-fill" width="18" style="color:#aaa"></iconify-icon> Outros
               </div>
             </div>
 
             <div id="inst-nubank" class="bank-instruction active">
-              <p style="font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; text-align:center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                No <b>Nubank</b>: Vá em "Área Pix" > "Pix Copia e Cola" e cole o código acima.
-              </p>
+              <p style="font-size:12px; color:rgba(255,255,255,0.75); line-height:1.7; text-align:center;">No <b style="color:#820ad1">Nubank</b>: Toque em <b>"Área Pix"</b> → <b>"Pix Copia e Cola"</b> → cole o código copiado acima e confirme.</p>
             </div>
             <div id="inst-inter" class="bank-instruction">
-              <p style="font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; text-align:center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                No <b>Inter</b>: Menu Pix > "Pagar" > "Pix Copia e Cola".
-              </p>
+              <p style="font-size:12px; color:rgba(255,255,255,0.75); line-height:1.7; text-align:center;">No <b style="color:#ff7a00">Inter</b>: Toque em <b>"Pix"</b> → <b>"Pagar"</b> → <b>"Pix Copia e Cola"</b> → cole e confirme.</p>
             </div>
-            <div id="inst-santander" class="bank-instruction">
-              <p style="font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; text-align:center; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                No <b>Santander</b>: Menu Pix > "Pagar com Pix Copia e Cola".
-              </p>
+            <div id="inst-itau" class="bank-instruction">
+              <p style="font-size:12px; color:rgba(255,255,255,0.75); line-height:1.7; text-align:center;">No <b style="color:#0052cc">Itaú</b>: Toque em <b>"Pix"</b> → <b>"Pagar"</b> → escolha <b>"Copia e Cola"</b> e cole o código.</p>
+            </div>
+            <div id="inst-outros" class="bank-instruction">
+              <p style="font-size:12px; color:rgba(255,255,255,0.75); line-height:1.7; text-align:center;">Em qualquer banco: acesse a área <b>Pix</b> → <b>"Pagar com Copia e Cola"</b> → cole o código copiado e confirme o pagamento.</p>
             </div>
 
-            <button class="checkout-btn" style="margin-top:25px; height:60px; font-size:18px; width: 100%; border-radius: 15px;" onclick="startRadar()">
+            <button class="checkout-btn" style="margin-top:16px; height:54px; font-size:16px; width:100%; border-radius:15px;" onclick="startRadar()">
               JÁ REALIZEI O PAGAMENTO
               <iconify-icon icon="ph:arrow-right-bold"></iconify-icon>
             </button>
 
-            <p style="text-align:center; font-size:11px; color:rgba(255,255,255,.3); margin-top:25px; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <p style="text-align:center; font-size:11px; color:rgba(255,255,255,.3); margin-top:14px; display:flex; align-items:center; justify-content:center; gap:6px;">
               <iconify-icon icon="ph:lock-fill" style="color:var(--primary)"></iconify-icon>
-              Pagamento Seguro via Sync Pay.
+              Pagamento 100% Seguro via Sync Pay.
             </p>
           </div>
 
@@ -2808,8 +2817,10 @@
     function toggleBank(bank) {
       document.querySelectorAll('.bank-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.bank-instruction').forEach(i => i.classList.remove('active'));
-      document.getElementById('tab-' + bank).classList.add('active');
-      document.getElementById('inst-' + bank).classList.add('active');
+      const tab = document.getElementById('tab-' + bank);
+      const inst = document.getElementById('inst-' + bank);
+      if (tab) tab.classList.add('active');
+      if (inst) inst.classList.add('active');
     }
 
     // --- LOGICA DO RADAR DE PAGAMENTO ---
@@ -2977,112 +2988,170 @@
       return rev == parseInt(cpf.charAt(10));
     }
 
+    // Função global para copiar o código PIX
+    let _pixCodeGlobal = '';
+    function copyPixCode() {
+      if (!_pixCodeGlobal) return;
+      navigator.clipboard.writeText(_pixCodeGlobal).then(() => {
+        const label = document.getElementById('copy-btn-label');
+        label.innerHTML = '<iconify-icon icon="ph:check-circle-bold"></iconify-icon> COPIADO COM SUCESSO!';
+        label.style.background = 'var(--success)';
+        showSystemToast('COPIADO!', 'Código PIX copiado para a área de transferência.', 'success');
+        setTimeout(() => {
+          label.innerHTML = '<iconify-icon icon="ph:copy-bold"></iconify-icon> COPIAR CÓDIGO PIX';
+          label.style.background = 'var(--primary)';
+        }, 3000);
+      }).catch(() => {
+        // fallback para dispositivos sem clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = _pixCodeGlobal;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showSystemToast('COPIADO!', 'Código PIX copiado!', 'success');
+      });
+    }
+
+    // Função para renderizar QR Code no canvas
+    function renderQRCode(text) {
+      const canvas = document.getElementById('pix-qr-canvas');
+      if (!canvas) return;
+      QRCode.toCanvas(canvas, text, {
+        width: 166,
+        margin: 1,
+        color: { dark: '#000000', light: '#ffffff' }
+      }, function(err) {
+        if (err) {
+          console.error('QR Error:', err);
+          // fallback: imagem via API externa
+          const img = document.createElement('img');
+          img.src = `https://api.qrserver.com/v1/create-qr-code/?size=166x166&data=${encodeURIComponent(text)}`;
+          img.style.cssText = 'width:166px;height:166px;border-radius:4px;';
+          canvas.parentNode.replaceChild(img, canvas);
+        }
+      });
+    }
+
+    function showPixStep(pixCode) {
+      _pixCodeGlobal = pixCode;
+      document.getElementById('pix-code').textContent = pixCode;
+      renderQRCode(pixCode);
+      // Resetar label do botão copiar
+      const label = document.getElementById('copy-btn-label');
+      if (label) {
+        label.innerHTML = '<iconify-icon icon="ph:copy-bold"></iconify-icon> COPIAR CÓDIGO PIX';
+        label.style.background = 'var(--primary)';
+      }
+      document.getElementById('step-info').classList.remove('active');
+      document.getElementById('step-payment').classList.add('active');
+      // Scroll suave para o topo do modal
+      document.querySelector('.checkout-body').scrollTop = 0;
+    }
+
     document.getElementById('genPixBtn').addEventListener('click', async () => {
-      const name = document.getElementById('chk-name').value.trim(), email = document.getElementById('chk-email').value.trim(), cpf = document.getElementById('chk-cpf').value.replace(/\D/g, '');
-      if (name.split(' ').length < 2 || !validarCPF(cpf)) { showSystemToast('DADOS INVÁLIDOS', 'Verifique nome e CPF.', 'error'); return; }
-      
+      const name = document.getElementById('chk-name').value.trim();
+      const email = document.getElementById('chk-email').value.trim();
+      const cpf = document.getElementById('chk-cpf').value.replace(/\D/g, '');
+
+      if (name.split(' ').length < 2 || !validarCPF(cpf)) {
+        showSystemToast('DADOS INV\u00c1LIDOS', 'Verifique nome completo e CPF.', 'error');
+        return;
+      }
       if (!CONFIG.SYNC_KEY || !CONFIG.SYNC_TOKEN) {
-        showSystemToast('ERRO DE CONFIGURAÇÃO', 'As chaves da Sync Pay não foram configuradas no Painel Admin.', 'error');
+        showSystemToast('SEM CONFIGURA\u00c7\u00c3O', 'Chaves Sync Pay ausentes no Painel Admin.', 'error');
         return;
       }
 
-      const loader = document.getElementById('loading-overlay'); loader.classList.add('active');
-      
-      // Fallback de segurança: Se em 8 segundos não carregar, avisa o usuário
+      const loader = document.getElementById('loading-overlay');
+      loader.classList.add('active');
+
       const fallback = setTimeout(() => {
         loader.classList.remove('active');
-        showSystemToast('CONEXÃO LENTA', 'Tentando gerar novamente...', 'warning');
-        
-        // Preenche dados de teste para não ficar bugado
-        const fakePix = "00020101021226850014br.gov.bcb.pix0136e29381-80f0-466d-8a62-23f2f093123c520400005303986540517.905802BR5915EDUZ_TECNOLOGIA6009SAO_PAULO62070503***6304E22A";
-        document.getElementById('pix-code').textContent = fakePix;
-        document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fakePix)}`;
-        
-        document.getElementById('step-info').classList.remove('active');
-        document.getElementById('step-payment').classList.add('active');
-      }, 8000);
+        showSystemToast('TEMPO ESGOTADO', 'A API n\u00e3o respondeu. Tente novamente.', 'error');
+      }, 15000);
 
       try {
-        console.log("Iniciando geração de PIX...");
-        
-        if (CONFIG.SYNC_KEY === 'DEMO' || CONFIG.SYNC_KEY.length < 10) {
-          clearTimeout(fallback);
-          const fakePix = "00020101021226850014br.gov.bcb.pix0136e29381-80f0-466d-8a62-23f2f093123c520400005303986540517.905802BR5915EDUZ_TECNOLOGIA6009SAO_PAULO62070503***6304E22A";
-          document.getElementById('pix-code').textContent = fakePix;
-          document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fakePix)}`;
-          document.getElementById('step-info').classList.remove('active');
-          document.getElementById('step-payment').classList.add('active');
-          showSystemToast('MODO TESTE', 'PIX gerado em modo de demonstração.', 'warning');
-          loader.classList.remove('active');
-          return;
+        // ── ETAPA 1: Autentica\u00e7\u00e3o Sync Pay ──────────────────────────
+        console.log('[SyncPay] Autenticando...');
+        const authRes = await fetch('https://api.syncpay.com.br/api/partner/v1/auth-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN })
+        });
+
+        if (!authRes.ok) {
+          const err = await authRes.text();
+          throw new Error('Auth falhou (' + authRes.status + '): ' + err.substring(0, 100));
         }
 
-        const authRes = await fetch('https://api.syncpay.com.br/api/partner/v1/auth-token', { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN }) 
-        });
-        
         const authData = await authRes.json();
-        const token = authData.access_token || authData.data?.access_token || authData.token;
-        
-        if (!token) {
-          console.error("Auth Fail:", authData);
-          throw new Error("Falha na autenticação: Verifique suas chaves no Telegram.");
+        console.log('[SyncPay] Auth OK:', JSON.stringify(authData));
+
+        const token = authData.access_token
+          || (authData.data && authData.data.access_token)
+          || authData.token
+          || (authData.data && authData.data.token);
+
+        if (!token) throw new Error('Token n\u00e3o recebido. Campos: ' + Object.keys(authData).join(', '));
+
+        // ── ETAPA 2: Gerar PIX Cash-in ───────────────────────────────────
+        const amount = parseFloat(String(CONFIG.PRICE_MAIN).replace(',', '.'));
+        if (!amount || amount <= 0) throw new Error('Pre\u00e7o inv\u00e1lido nas configura\u00e7\u00f5es.');
+
+        const txId = 'ERA' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+        console.log('[SyncPay] Gerando PIX R$' + amount + ' tx=' + txId);
+
+        const pixRes = await fetch('https://api.syncpay.com.br/api/partner/v1/pix/cash-in', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            amount: amount,
+            cpf: cpf,
+            name: name,
+            email: email,
+            description: CONFIG.PRODUCT_NAME,
+            identifier: txId,
+            callbackUrl: window.location.origin + '/webhook'
+          })
+        });
+
+        if (!pixRes.ok) {
+          const err = await pixRes.text();
+          throw new Error('PIX error (' + pixRes.status + '): ' + err.substring(0, 150));
         }
 
-        // Converter preço para centavos (ex: 17.90 -> 1790) ou garantir ponto decimal
-        const amount = parseFloat(String(CONFIG.PRICE_MAIN).replace(',', '.'));
-        if (isNaN(amount)) throw new Error("Preço do produto inválido.");
+        const data = await pixRes.json();
+        console.log('[SyncPay] PIX response:', JSON.stringify(data));
 
-        const res = await fetch('https://api.syncpay.com.br/api/partner/v1/cash-in', { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
-          body: JSON.stringify({ 
-            amount: amount, 
-            description: CONFIG.PRODUCT_NAME, 
-            payment_method: "pix",
-            client: { 
-              name: name, 
-              cpf: cpf, 
-              email: email, 
-              phone: "11999999999" 
-            } 
-          }) 
-        });
-        
-        const data = await res.json();
-        const pixCode = data.pix_code || data.data?.pix_code || data.copy_paste;
-        
+        // Sync Pay pode retornar o c\u00f3digo em v\u00e1rios campos dependendo da vers\u00e3o
+        const pixCode = data.pix_copia_e_cola
+          || data.qr_code
+          || data.brcode
+          || data.copy_paste
+          || data.payload
+          || (data.data && data.data.pix_copia_e_cola)
+          || (data.data && data.data.qr_code)
+          || (data.data && data.data.brcode)
+          || (data.data && data.data.payload);
+
         if (pixCode) {
           clearTimeout(fallback);
-          document.getElementById('pix-code').textContent = pixCode;
-          document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCode)}`;
-          document.getElementById('step-info').classList.remove('active');
-          document.getElementById('step-payment').classList.add('active');
-          
-          tgNotify(`⚡ <b>PIX REAL GERADO</b>\n👤 ${name}\n💰 R$ ${amount.toFixed(2)}`);
-          
-          document.getElementById('pix-copy-btn').onclick = () => {
-            navigator.clipboard.writeText(pixCode);
-            showSystemToast('COPIADO', 'Código PIX copiado!', 'success');
-          };
+          showPixStep(pixCode);
+          tgNotify('\u26a1 <b>PIX REAL GERADO</b>\n\ud83d\udc64 ' + name + '\n\ud83d\udce7 ' + email + '\n\ud83d\udcb0 R$ ' + amount.toFixed(2) + '\n\ud83d\udd11 TX: ' + txId);
         } else {
-          console.error("Cash-in Fail:", data);
-          throw new Error(data.message || data.error || "A API recusou a geração do PIX.");
+          const campos = Object.keys(data).concat(data.data ? Object.keys(data.data).map(k => 'data.' + k) : []);
+          throw new Error('C\u00f3digo PIX n\u00e3o encontrado. Campos dispon\u00edveis: ' + campos.join(', '));
         }
+
       } catch (e) {
         clearTimeout(fallback);
-        console.error("Erro Checkout:", e);
-        showSystemToast('ERRO NO PAGAMENTO', e.message, 'error');
-        
-        // Fallback: preenche dados de teste para o layout não quebrar
-        const fakePix = "00020101021226850014br.gov.bcb.pix0136e29381-80f0-466d-8a62-23f2f093123c520400005303986540517.905802BR5915EDUZ_TECNOLOGIA6009SAO_PAULO62070503***6304E22A";
-        document.getElementById('pix-code').textContent = fakePix;
-        document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fakePix)}`;
-        
-        document.getElementById('step-info').classList.remove('active');
-        document.getElementById('step-payment').classList.add('active');
+        console.error('[SyncPay] ERRO:', e.message, e);
+        tgNotify('\u274c <b>ERRO PIX</b>\n\ud83d\udc64 ' + name + '\n\u26a0\ufe0f ' + e.message);
+        showSystemToast('ERRO AO GERAR PIX', e.message, 'error');
       } finally {
         loader.classList.remove('active');
       }
@@ -3184,11 +3253,9 @@
       });
     });
 
-    // Eventos Adicionais
-    document.getElementById('heroCTA')?.addEventListener('click', (e) => { 
-      e.preventDefault(); 
+    // Eventos Adicionais - heroCTA agora é um <button> com onclick, listener apenas para tgNotify
+    document.getElementById('heroCTA')?.addEventListener('click', () => { 
       tgNotify(`🖱️ <b>INTERAÇÃO: HERO_CTA</b>\n🆔 ${getSessionId()}`); 
-      document.getElementById('oferta')?.scrollIntoView({ behavior: 'smooth' }); 
     });
 
     // Anti-Cópia Pro
