@@ -1196,14 +1196,16 @@
     .upsell-modal {
       background: var(--black);
       border: 2px solid var(--primary);
-      max-width: 600px;
+      max-width: 580px;
       width: 100%;
       position: relative;
-      max-height: 90vh;
-      overflow-y: auto;
       border-radius: 32px;
-      box-shadow: 0 0 100px rgba(var(--primary-rgb), 0.2)
+      box-shadow: 0 0 100px rgba(var(--primary-rgb), 0.2);
+      overflow: hidden; /* Remove o scroll visível */
     }
+
+    .upsell-modal::-webkit-scrollbar { display: none; }
+    .upsell-modal { -ms-overflow-style: none; scrollbar-width: none; }
 
     .upsell-header {
       background: var(--accent-gradient);
@@ -1572,7 +1574,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, .95);
-      z-index: 9995;
+      z-index: 10005;
       align-items: center;
       justify-content: center;
       padding: 20px;
@@ -2657,6 +2659,7 @@
        CHECKOUT & PAYMENT
        ============================================================ */
     function openCheckout(source = 'Botão Direto') {
+      document.getElementById('upsell-overlay').classList.remove('active');
       tgNotify(`💳 <b>CHECKOUT INICIADO</b>\n🆔 ${getSessionId()}\n🖱️ ${source}\n💰 R$${CONFIG.PRICE_MAIN}`);
       document.getElementById('checkout-overlay').classList.add('active');
       document.body.style.overflow = 'hidden';
