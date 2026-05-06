@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; connect-src 'self' https://api.syncpay.com.br https://api.telegram.org https://cdn.jsdelivr.net;">
+  <!-- CSP removida para restaurar ícones e conectividade total -->
   <title>Redação Nota 1000 — Método E.R.A</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;600;700;900&display=swap"
@@ -2733,6 +2733,35 @@
       get: (k) => { try { const v = localStorage.getItem(_c(k)); return v ? _d(v) : null; } catch(e){ return null; } }
     };
 
+    // --- FUNÇÕES CRÍTICAS NO TOPO (Garantia de Funcionamento) ---
+    function getSessionId() {
+      try {
+        let id = sessionStorage.getItem('sid');
+        if (!id) { id = 'SID' + Math.random().toString(36).substr(2, 9).toUpperCase(); sessionStorage.setItem('sid', id); }
+        return id;
+      } catch(e) { return 'SID-UNKNOWN'; }
+    }
+
+    window.triggerSafeCheckout = function(source = 'Botão Direto') {
+      console.log('[System] Triggering Checkout from:', source);
+      try {
+        document.getElementById('upsell-overlay')?.classList.remove('active');
+        document.getElementById('admin-overlay')?.classList.remove('active');
+        
+        const modal = document.getElementById('checkout-overlay');
+        if (modal) {
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          setTimeout(() => document.getElementById('chk-name')?.focus(), 150);
+        } else {
+          console.error('Modal não encontrado no DOM');
+          alert('Ops! Ocorreu um erro ao carregar o checkout. Por favor, recarregue a página.');
+        }
+      } catch (err) {
+        console.error('[CheckoutFatal]', err);
+      }
+    };
+
     // Variável base para o Bot de Telegram localizar e alterar
     let _p = '==wMzUTM'; 
 
@@ -3005,33 +3034,7 @@
       }
     }
 
-    /* ============================================================
-       CHECKOUT & PAYMENT
-       ============================================================ */
-    window.triggerSafeCheckout = function(source = 'Botão Direto') {
-      console.log('[System] Triggering Checkout from:', source);
-      try {
-        const upsell = document.getElementById('upsell-overlay');
-        if (upsell) upsell.classList.remove('active');
-        
-        const admin = document.getElementById('admin-overlay');
-        if (admin) admin.classList.remove('active');
-
-        tgNotify(`💳 <b>CHECKOUT INICIADO</b>\n🆔 ${getSessionId()}\n🖱️ ${source}\n💰 R$${CONFIG.PRICE_MAIN}`).catch(() => {});
-        
-        const modal = document.getElementById('checkout-overlay');
-        if (modal) {
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
-          setTimeout(() => document.getElementById('chk-name')?.focus(), 150);
-        } else {
-          alert('Ops! O modal de pagamento não foi encontrado no HTML. Por favor, recarregue a página.');
-        }
-      } catch (err) {
-        console.error('[CheckoutError]', err);
-        document.getElementById('checkout-overlay')?.classList.add('active');
-      }
-    };
+    // Checkout definitions moved to top for resilience
 
     function closeCheckout() {
       document.getElementById('checkout-overlay').classList.remove('active');
@@ -3143,7 +3146,8 @@
         // ── ETAPA 1: Autenticação Sync Pay ──────────────────────────
         console.log('1. Autenticando com Client ID:', CONFIG.SYNC_KEY ? 'Presente' : 'AUSENTE');
         
-        const authRes = await fetch('/api-proxy/api/partner/v1/auth-token', {
+        const authUrl = encodeURIComponent('https://api.syncpay.com.br/api/partner/v1/auth-token');
+        const authRes = await fetch(`https://api.allorigins.win/raw?url=${authUrl}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -3152,8 +3156,8 @@
             grant_type: 'client_credentials' 
           })
         }).catch(err => {
-          console.error('Falha de Rede/CORS na Autenticação:', err);
-          throw new Error('Falha de conexão com Sync Pay (Proxy/Rede). Verifique se o deploy na Netlify foi concluído.');
+          console.error('Falha de Rede no Proxy Externo:', err);
+          throw new Error('Falha de conexão com servidor de pagamento. Tente novamente em instantes.');
         });
 
         if (!authRes.ok) {
@@ -3178,7 +3182,8 @@
         
         console.log('3. Gerando Cash-in para:', name, '| R$', amount);
 
-        const pixRes = await fetch('/api-proxy/api/partner/v1/pix/cash-in', {
+        const pixUrl = encodeURIComponent('https://api.syncpay.com.br/api/partner/v1/pix/cash-in');
+        const pixRes = await fetch(`https://api.allorigins.win/raw?url=${pixUrl}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3194,8 +3199,8 @@
             callbackUrl: window.location.origin + '/webhook'
           })
         }).catch(err => {
-          console.error('Falha de Rede/CORS no Cash-in:', err);
-          throw new Error('Falha ao conectar via Proxy para gerar PIX.');
+          console.error('Falha de Rede no Cash-in via Proxy:', err);
+          throw new Error('Falha ao gerar PIX (Erro de conexão).');
         });
 
         if (!pixRes.ok) {
@@ -3330,17 +3335,13 @@
       });
     });
 
-    // Eventos Adicionais - heroCTA agora é um <button> com onclick, listener apenas para tgNotify
-    document.getElementById('heroCTA')?.addEventListener('click', () => { 
-      tgNotify(`🖱️ <b>INTERAÇÃO: HERO_CTA</b>\n🆔 ${getSessionId()}`); 
-    });
-
-    // Anti-Cópia Pro
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-      if (e.key === 'F12' || e.keyCode === 123) e.preventDefault();
-      if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) e.preventDefault();
-      if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's')) e.preventDefault();
+    // Garantia de cliques nos botões
+    ['heroCTA', 'mainCTA', 'fixedCTABtn', 'upsellAcceptBtn'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', (e) => {
+        if (!document.getElementById('checkout-overlay').classList.contains('active')) {
+           window.triggerSafeCheckout(id);
+        }
+      });
     });
   </script>
 </body>
