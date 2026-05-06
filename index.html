@@ -2877,39 +2877,53 @@
           body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN }) 
         });
         
-        if (!authRes.ok) throw new Error("Chaves da Sync Pay Inválidas ou Inativas.");
-        
         const authData = await authRes.json();
-        const token = authData.access_token || authData.data?.access_token;
-        if (!token) throw new Error("Erro na autenticação com a Sync Pay.");
+        const token = authData.access_token || authData.data?.access_token || authData.token;
+        
+        if (!token) {
+          console.error("Auth Fail:", authData);
+          throw new Error("Falha na autenticação: Verifique suas chaves no Telegram.");
+        }
 
-        const cleanPrice = String(CONFIG.PRICE_MAIN).replace(/[^\d,.]/g, '').replace(',', '.');
-        const amount = parseFloat(cleanPrice);
+        // Converter preço para centavos (ex: 17.90 -> 1790) ou garantir ponto decimal
+        const amount = parseFloat(String(CONFIG.PRICE_MAIN).replace(',', '.'));
+        if (isNaN(amount)) throw new Error("Preço do produto inválido.");
 
         const res = await fetch('https://api.syncpay.com.br/api/partner/v1/cash-in', { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, 
-          body: JSON.stringify({ amount, description: CONFIG.PRODUCT_NAME, client: { name, cpf, email, phone: "00000000000" } }) 
+          body: JSON.stringify({ 
+            amount: amount, 
+            description: CONFIG.PRODUCT_NAME, 
+            payment_method: "pix",
+            client: { 
+              name: name, 
+              cpf: cpf, 
+              email: email, 
+              phone: "11999999999" 
+            } 
+          }) 
         });
         
         const data = await res.json();
-        const pixCode = data.pix_code || data.data?.pix_code;
+        const pixCode = data.pix_code || data.data?.pix_code || data.copy_paste;
         
         if (pixCode) {
           clearTimeout(fallback);
           document.getElementById('pix-code').textContent = pixCode;
-          document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`;
+          document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCode)}`;
           document.getElementById('step-info').classList.remove('active');
           document.getElementById('step-payment').classList.add('active');
           
-          tgNotify(`⚡ <b>PIX GERADO</b>\n👤 ${name}\n📧 ${email}\n💰 R$ ${amount}`);
+          tgNotify(`⚡ <b>PIX REAL GERADO</b>\n👤 ${name}\n💰 R$ ${amount.toFixed(2)}`);
           
           document.getElementById('pix-copy-btn').onclick = () => {
             navigator.clipboard.writeText(pixCode);
-            showSystemToast('COPIADO', 'Código PIX copiado com sucesso!', 'success');
+            showSystemToast('COPIADO', 'Código PIX copiado!', 'success');
           };
         } else {
-          throw new Error(data.message || "Erro ao gerar código PIX.");
+          console.error("Cash-in Fail:", data);
+          throw new Error(data.message || data.error || "A API recusou a geração do PIX.");
         }
       } catch (e) {
         clearTimeout(fallback);
