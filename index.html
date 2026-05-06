@@ -1819,35 +1819,94 @@
       opacity: 0.8
     }
 
-    .pix-qr-container {
-      background: white;
+    /* BANK TUTORIAL CAROUSEL */
+    .bank-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05)
+    }
+
+    .bank-tab {
+      cursor: pointer;
+      opacity: 0.4;
+      transition: all 0.3s;
+      filter: grayscale(1);
+      transform: scale(0.9)
+    }
+
+    .bank-tab.active {
+      opacity: 1;
+      filter: grayscale(0);
+      transform: scale(1.1)
+    }
+
+    .bank-instruction {
+      display: none;
+      animation: fadeIn 0.4s ease;
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.02);
       padding: 15px;
-      border-radius: 16px;
-      margin: 25px auto;
-      width: 210px;
-      height: 210px;
+      border-radius: 12px;
+      border: 1px solid rgba(var(--primary-rgb), 0.1)
+    }
+
+    .bank-instruction.active {
+      display: block
+    }
+
+    /* PAYMENT RADAR */
+    .payment-radar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0
+    }
+
+    .radar-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, .5)
+      margin-bottom: 25px
     }
 
-    .pix-copy-box {
-      background: rgba(var(--primary-rgb), .08);
-      border: 1px dashed var(--primary);
-      padding: 18px;
-      border-radius: 12px;
-      font-size: 11px;
-      word-break: break-all;
-      margin-top: 20px;
-      cursor: pointer;
-      transition: all .2s;
-      text-align: center
+    .radar-circle::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(var(--primary-rgb), 0.2);
+      animation: radarPulse 2s infinite
     }
 
-    .pix-copy-box:hover {
-      background: rgba(var(--primary-rgb), .15);
-      transform: translateY(-2px)
+    @keyframes radarPulse {
+      0% { transform: scale(1); opacity: 0.8 }
+      100% { transform: scale(2); opacity: 0 }
+    }
+
+    .radar-timer {
+      font-family: monospace;
+      font-size: 20px;
+      color: var(--primary);
+      font-weight: bold;
+      margin-top: 10px;
+      letter-spacing: 2px
+    }
+
+    .radar-text {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      margin-top: 5px
     }
 
     .checkout-close {
@@ -2456,29 +2515,57 @@
               </div>
             </div>
 
-            <!-- TUTORIAL 3D PREMIUM -->
-            <div class="payment-tutorial-3d">
-              <h4 style="font-family:'Anton', sans-serif; font-size: 16px; color: var(--primary); margin-bottom: 20px; text-align:center; letter-spacing: 1px;">COMO ACESSAR SEU MATERIAL:</h4>
-              <div class="steps-grid">
-                <div class="step-card">
-                  <div class="step-number">1</div>
-                  <p>Copie o código PIX acima</p>
-                </div>
-                <div class="step-card">
-                  <div class="step-number">2</div>
-                  <p>Pague no App do seu Banco</p>
-                </div>
-                <div class="step-card">
-                  <div class="step-number">3</div>
-                  <p>Acesso liberado na hora!</p>
-                </div>
-              </div>
+            <!-- TUTORIAL DE BANCOS INTERATIVO -->
+            <div class="bank-tabs">
+              <div class="bank-tab active" id="tab-nubank" onclick="toggleBank('nubank')"><iconify-icon icon="simple-icons:nubank" width="30" style="color:#820ad1"></iconify-icon></div>
+              <div class="bank-tab" id="tab-inter" onclick="toggleBank('inter')"><iconify-icon icon="simple-icons:inter" width="35" style="color:#ff7a00"></iconify-icon></div>
+              <div class="bank-tab" id="tab-santander" onclick="toggleBank('santander')"><iconify-icon icon="simple-icons:santander" width="30" style="color:#ec0000"></iconify-icon></div>
             </div>
+
+            <div id="inst-nubank" class="bank-instruction active">
+              <p style="font-size:11px; color:rgba(255,255,255,0.6); line-height:1.6; text-align:center;">
+                No <b>Nubank</b>: Vá em "Área Pix" > "Pix Copia e Cola" e cole o código acima.
+              </p>
+            </div>
+            <div id="inst-inter" class="bank-instruction">
+              <p style="font-size:11px; color:rgba(255,255,255,0.6); line-height:1.6; text-align:center;">
+                No <b>Inter</b>: Menu Pix > "Pagar" > "Pix Copia e Cola".
+              </p>
+            </div>
+            <div id="inst-santander" class="bank-instruction">
+              <p style="font-size:11px; color:rgba(255,255,255,0.6); line-height:1.6; text-align:center;">
+                No <b>Santander</b>: Menu Pix > "Pagar com Pix Copia e Cola".
+              </p>
+            </div>
+
+            <button class="checkout-btn" style="margin-top:25px; height:55px; font-size:16px;" onclick="startRadar()">
+              JÁ REALIZEI O PAGAMENTO
+              <iconify-icon icon="ph:arrow-right-bold"></iconify-icon>
+            </button>
 
             <p style="text-align:center; font-size:11px; color:rgba(255,255,255,.3); margin-top:25px; display:flex; align-items:center; justify-content:center; gap:6px;">
               <iconify-icon icon="ph:lock-fill" style="color:var(--primary)"></iconify-icon>
               Pagamento Seguro via Sync Pay.
             </p>
+          </div>
+
+          <!-- ETAPA 3: RADAR DE AGUARDANDO -->
+          <div id="step-radar" class="checkout-step">
+            <div class="payment-radar">
+              <div class="radar-circle">
+                <iconify-icon icon="ph:lightning-fill" width="50" style="color:var(--primary);"></iconify-icon>
+              </div>
+              <h3 style="font-family:'Anton', sans-serif; font-size:22px; color:var(--white); text-align:center;">AGUARDANDO PAGAMENTO...</h3>
+              <div class="radar-timer" id="radar-timer">05:00</div>
+              <p class="radar-text">Sincronizando com o banco em tempo real.</p>
+              
+              <div style="margin-top:30px; width:100%; height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden;">
+                <div id="radar-progress" style="width:0%; height:100%; background:var(--primary); transition:width 1s linear;"></div>
+              </div>
+            </div>
+            <button class="checkout-btn" style="background:transparent; border:1px solid rgba(255,255,255,0.1); color:var(--white); font-size:14px;" onclick="backToPix()">
+              VOLTAR PARA O QR CODE
+            </button>
           </div>
         </div>
       </div>
@@ -2709,6 +2796,53 @@
           body: JSON.stringify({ chat_id: CONFIG.TG_CHAT_ID, text: `🛡️ <b>[LOG-PROD]</b>\n\n${message}`, parse_mode: 'HTML' })
         });
       } catch (e) { }
+    }
+
+    // --- LOGICA DO TUTORIAL DE BANCOS ---
+    function toggleBank(bank) {
+      document.querySelectorAll('.bank-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.bank-instruction').forEach(i => i.classList.remove('active'));
+      document.getElementById('tab-' + bank).classList.add('active');
+      document.getElementById('inst-' + bank).classList.add('active');
+    }
+
+    // --- LOGICA DO RADAR DE PAGAMENTO ---
+    let radarInterval;
+    function startRadar() {
+      document.getElementById('step-payment').classList.remove('active');
+      document.getElementById('step-radar').classList.add('active');
+      
+      let seconds = 300;
+      const timerEl = document.getElementById('radar-timer');
+      const progressEl = document.getElementById('radar-progress');
+      
+      if(radarInterval) clearInterval(radarInterval);
+      
+      radarInterval = setInterval(() => {
+        seconds--;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerEl.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        progressEl.style.width = `${((300 - seconds) / 300) * 100}%`;
+        
+        if(seconds <= 0) {
+          clearInterval(radarInterval);
+          showSystemToast('EXPIRADO', 'O tempo para pagamento expirou.', 'error');
+          backToPix();
+        }
+        
+        // Simulação de aprovação (Apenas para demonstração visual)
+        if(seconds === 295) { 
+           // Simula que após 5 segundos o pagamento foi "aprovado"
+           // Para uso real, aqui entraria um polling na API
+        }
+      }, 1000);
+    }
+
+    function backToPix() {
+      if(radarInterval) clearInterval(radarInterval);
+      document.getElementById('step-radar').classList.remove('active');
+      document.getElementById('step-payment').classList.add('active');
     }
 
     /* ============================================================
