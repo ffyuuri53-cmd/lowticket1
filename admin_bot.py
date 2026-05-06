@@ -44,16 +44,13 @@ def change_password(message):
         with open(FILEPATH, 'r', encoding='utf-8') as f:
             content = f.read()
             
-        # Procura por let _p = "..."; ou const _p = '...'; (suporta aspas simples e duplas)
-        new_content = re.sub(r'(_p\s*=\s*)([\'"])(.*?)([\'"])', f'\\1\\2{encoded}\\4', content)
-        
-        if new_content == content:
-            # Tenta um regex mais agressivo se o primeiro falhar
-            new_content = re.sub(r'let _p = .*?;', f"let _p = '{encoded}';", content)
-            
-        if new_content == content:
-            bot.reply_to(message, "⚠️ Erro: Não encontrei a variável _p no index.html. Verifique o arquivo.")
+        # Regex ultra-simplificado para encontrar _p = '...'; ou _p = "...";
+        pattern = r'_p\s*=\s*[\'"](.*?)[\'"]'
+        if not re.search(pattern, content):
+            bot.reply_to(message, "⚠️ Erro: Variável _p não encontrada no arquivo index.html")
             return
+            
+        new_content = re.sub(pattern, f"_p = '{encoded}'", content)
             
         with open(FILEPATH, 'w', encoding='utf-8') as f:
             f.write(new_content)
