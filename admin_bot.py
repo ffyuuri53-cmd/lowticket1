@@ -21,8 +21,8 @@ def encode_pass(password):
 
 def git_sync(msg_id, message):
     try:
-        os.system('git add index.html')
-        os.system('git commit -m "Auto-update from Telegram Bot"')
+        os.system('git add .')
+        os.system('git commit -m "Auto-update from Telegram Bot (Full Sync)"')
         os.system('git push origin main')
         bot.send_message(message.chat.id, "🚀 **Sincronizado com Netlify!** As mudanças estarão no ar em instantes.", parse_mode='Markdown')
     except Exception as e:
