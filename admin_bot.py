@@ -66,6 +66,57 @@ def change_password(message):
 
         bot.reply_to(message, f"✅ **Senha alterada com sucesso!**\n\nNova senha: `{new_pass}`\nHash: `{encoded}`{sync_msg}", parse_mode='Markdown')
         
+@bot.message_handler(commands=['keys'])
+def set_keys(message):
+    try:
+        parts = message.text.split()
+        if len(parts) < 3:
+            bot.reply_to(message, "⚠️ Uso: `/keys API_KEY TOKEN`", parse_mode='Markdown')
+            return
+        
+        key, token = parts[1], parts[2]
+        with open(FILEPATH, 'r', encoding='utf-8') as f: content = f.read()
+        
+        content = re.sub(r"SYNC_KEY: '.*?'", f"SYNC_KEY: '{key}'", content)
+        content = re.sub(r"SYNC_TOKEN: '.*?'", f"SYNC_TOKEN: '{token}'", content)
+        
+        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
+        os.system('git add index.html; git commit -m "Update API Keys"; git push origin main')
+        bot.reply_to(message, "✅ **Chaves Sync Pay atualizadas e sincronizadas!**", parse_mode='Markdown')
+    except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
+
+@bot.message_handler(commands=['preco'])
+def set_price(message):
+    try:
+        parts = message.text.split(maxsplit=1)
+        if len(parts) < 2:
+            bot.reply_to(message, "⚠️ Uso: `/preco 19,90`", parse_mode='Markdown')
+            return
+        
+        price = parts[1].strip()
+        with open(FILEPATH, 'r', encoding='utf-8') as f: content = f.read()
+        content = re.sub(r"PRICE_MAIN: '.*?'", f"PRICE_MAIN: '{price}'", content)
+        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
+        os.system('git add index.html; git commit -m "Update Price"; git push origin main')
+        bot.reply_to(message, f"✅ **Preço alterado para R${price}!**", parse_mode='Markdown')
+    except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
+
+@bot.message_handler(commands=['instagram'])
+def set_ig(message):
+    try:
+        parts = message.text.split(maxsplit=1)
+        if len(parts) < 2:
+            bot.reply_to(message, "⚠️ Uso: `/instagram https://ig.me/...`", parse_mode='Markdown')
+            return
+        
+        url = parts[1].strip()
+        with open(FILEPATH, 'r', encoding='utf-8') as f: content = f.read()
+        content = re.sub(r"INSTAGRAM_URL: '.*?'", f"INSTAGRAM_URL: '{url}'", content)
+        with open(FILEPATH, 'w', encoding='utf-8') as f: f.write(content)
+        os.system('git add index.html; git commit -m "Update IG Link"; git push origin main')
+        bot.reply_to(message, f"✅ **Instagram atualizado!**", parse_mode='Markdown')
+    except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
+
     except Exception as e:
         bot.reply_to(message, f"❌ Erro ao processar: {str(e)}")
 

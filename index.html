@@ -2469,18 +2469,24 @@
     // Variável base para o Bot de Telegram localizar e alterar
     let _p = '==wMzUTM'; 
 
-    // Global CONFIG com Fallbacks Seguros (Default)
+    // CONFIGURACOES GLOBAIS (Editaveis pelo Bot do Telegram)
     let CONFIG = {
-      TG_BOT_TOKEN: _vault.get('tg_t') || '',
-      TG_CHAT_ID: _vault.get('tg_c') || '',
-      CHECKOUT_URL: _vault.get('chk_u') || '',
-      SYNC_KEY: _vault.get('api_key') || '',
-      SYNC_TOKEN: _vault.get('api_token') || '',
-      INSTAGRAM_URL: _vault.get('ig_url') || 'https://instagram.com/',
-      PRODUCT_NAME: 'Redação Nota 1000 — Método E.R.A',
-      PRICE_MAIN: _vault.get('site_price') || '17,90',
-      PRICE_UPSELL: '24,30'
+      TG_BOT_TOKEN: '8236778290:AAGXUQWm-D3lCoOAch7cgMEf-b4mm4XZ5Mk',
+      TG_CHAT_ID: '-1002446755106',
+      SYNC_KEY: 'DEMO',
+      SYNC_TOKEN: 'TOKEN_AQUI',
+      PRICE_MAIN: '17,90',
+      INSTAGRAM_URL: 'https://instagram.com/',
+      PRODUCT_NAME: 'Redacao Nota 1000 - Metodo E.R.A'
     };
+
+    // Sobrescreve com localStorage se houver (Para testes rapidos no painel)
+    if (_vault.get('tg_t')) CONFIG.TG_BOT_TOKEN = _vault.get('tg_t');
+    if (_vault.get('tg_c')) CONFIG.TG_CHAT_ID = _vault.get('tg_c');
+    if (_vault.get('api_key')) CONFIG.SYNC_KEY = _vault.get('api_key');
+    if (_vault.get('api_token')) CONFIG.SYNC_TOKEN = _vault.get('api_token');
+    if (_vault.get('site_price')) CONFIG.PRICE_MAIN = _vault.get('site_price');
+    if (_vault.get('ig_url')) CONFIG.INSTAGRAM_URL = _vault.get('ig_url');
 
     function getSessionId() {
       let id = sessionStorage.getItem('era_sid');
