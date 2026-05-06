@@ -2970,6 +2970,18 @@
     }
 
     function applyAdminSettings() {
+      try {
+        const saved = _vault.get('config');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Só sobrescreve se o valor não for vazio/null
+          for (let k in parsed) {
+            if (parsed[k]) CONFIG[k] = parsed[k];
+          }
+          console.log('[System] Configurações aplicadas do cache.');
+        }
+      } catch (e) { console.error('[ConfigError]', e); }
+      
       const color = _vault.get('site_color');
       if (color) {
         document.documentElement.style.setProperty('--primary', color);
@@ -3134,7 +3146,11 @@
         const authRes = await fetch('/api-proxy/api/partner/v1/auth-token', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ client_id: CONFIG.SYNC_KEY, client_secret: CONFIG.SYNC_TOKEN })
+          body: JSON.stringify({ 
+            client_id: String(CONFIG.SYNC_KEY).trim(), 
+            client_secret: String(CONFIG.SYNC_TOKEN).trim(),
+            grant_type: 'client_credentials' 
+          })
         }).catch(err => {
           console.error('Falha de Rede/CORS na Autenticação:', err);
           throw new Error('Falha de conexão com Sync Pay (Proxy/Rede). Verifique se o deploy na Netlify foi concluído.');
@@ -3142,8 +3158,9 @@
 
         if (!authRes.ok) {
           const errText = await authRes.text();
-          console.error('Erro de Auth (Status ' + authRes.status + '):', errText);
-          throw new Error('Falha na autenticação (Chaves inválidas ou API fora do ar).');
+          console.error(`Erro de Auth (Status ${authRes.status}):`, errText);
+          if (authRes.status === 401) throw new Error('Chaves de API Inválidas (401). Verifique seu Client ID e Secret.');
+          throw new Error(`Falha na autenticação (Erro ${authRes.status}). Verifique suas chaves.`);
         }
 
         const authData = await authRes.json();
