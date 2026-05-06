@@ -54,7 +54,16 @@ def change_password(message):
         with open(FILEPATH, 'w', encoding='utf-8') as f:
             f.write(new_content)
             
-        bot.reply_to(message, f"✅ **Senha alterada com sucesso!**\n\nNova senha: `{new_pass}`\nHash: `{encoded}`\n\nO site foi atualizado permanentemente.", parse_mode='Markdown')
+        # SINCRONIZAÇÃO COM GITHUB (Para Netlify atualizar)
+        try:
+            os.system('git add index.html')
+            os.system('git commit -m "Auto-update password from Telegram Bot"')
+            os.system('git push origin main')
+            sync_msg = "\n\n🚀 **Sincronizado com Netlify!** O site estará atualizado em instantes."
+        except:
+            sync_msg = "\n\n⚠️ Erro ao sincronizar com GitHub. Verifique as credenciais no terminal."
+
+        bot.reply_to(message, f"✅ **Senha alterada com sucesso!**\n\nNova senha: `{new_pass}`\nHash: `{encoded}`{sync_msg}", parse_mode='Markdown')
         
     except Exception as e:
         bot.reply_to(message, f"❌ Erro ao processar: {str(e)}")
