@@ -66,6 +66,9 @@ def change_password(message):
 
         bot.reply_to(message, f"✅ **Senha alterada com sucesso!**\n\nNova senha: `{new_pass}`\nHash: `{encoded}`{sync_msg}", parse_mode='Markdown')
         
+    except Exception as e:
+        bot.reply_to(message, f"❌ Erro ao processar: {str(e)}")
+
 @bot.message_handler(commands=['keys'])
 def set_keys(message):
     try:
@@ -117,8 +120,6 @@ def set_ig(message):
         bot.reply_to(message, f"✅ **Instagram atualizado!**", parse_mode='Markdown')
     except Exception as e: bot.reply_to(message, f"❌ Erro: {e}")
 
-    except Exception as e:
-        bot.reply_to(message, f"❌ Erro ao processar: {str(e)}")
 
 if __name__ == "__main__":
     print("-" * 30)
