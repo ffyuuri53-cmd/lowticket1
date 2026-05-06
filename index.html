@@ -2721,7 +2721,7 @@
 
   <script>
     /* ============================================================
-       VERSION: 2.0.5 - ULTRA RESILIENTE
+       VERSION: 2.0.6 - CORS-BYPASS ACTIVE
        HELPER FUNCTIONS & UTILITIES
        ============================================================ */
     window.onerror = function(msg, url, line) {
@@ -2875,10 +2875,11 @@
     async function tgNotify(message) {
       if (!CONFIG.TG_BOT_TOKEN || !CONFIG.TG_CHAT_ID) return;
       try {
-        const cleanMsg = message.replace(/<[^>]*>/g, '');
+        const cleanMsg = message.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
         await fetch(`https://api.telegram.org/bot${CONFIG.TG_BOT_TOKEN}/sendMessage`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: CONFIG.TG_CHAT_ID, text: `🛡️ <b>[LOG-PROD]</b>\n\n${message}`, parse_mode: 'HTML' })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: CONFIG.TG_CHAT_ID, text: '[SISTEMA-LOG] ' + cleanMsg })
         });
       } catch (e) { }
     }
@@ -3155,8 +3156,6 @@
         console.group('[SyncPay] Processando Pagamento');
         
         // ── ETAPA 1: Autenticação Sync Pay ──────────────────────────
-        alert('🔄 Passo 1: Iniciando Autenticação...');
-        
         const authUrl = 'https://api.syncpay.com.br/api/partner/v1/auth-token';
         const authRes = await fetch(`https://corsproxy.io/?${encodeURIComponent(authUrl)}`, {
           method: 'POST',
@@ -3170,7 +3169,6 @@
 
         if (!authRes.ok) {
           const errText = await authRes.text();
-          alert('❌ Erro na Autenticação: ' + authRes.status);
           throw new Error('Falha na autenticação (Erro ' + authRes.status + ')');
         }
 
@@ -3180,8 +3178,6 @@
         if (!token) throw new Error('Token não encontrado.');
 
         // ── ETAPA 2: Gerar PIX Cash-in ───────────────────────────────────
-        alert('✅ Passo 2: Autenticado! Gerando código PIX...');
-        
         const amount = parseFloat(String(CONFIG.PRICE_MAIN).replace(',', '.'));
         const txId = 'ERA' + Date.now();
         const pixUrl = 'https://api.syncpay.com.br/api/partner/v1/pix/cash-in';
@@ -3204,9 +3200,7 @@
         });
 
         if (!pixRes.ok) {
-          const errText = await pixRes.text();
-          alert('❌ Erro ao Gerar PIX: ' + pixRes.status);
-          throw new Error('Erro na geração do PIX');
+          throw new Error('Erro na geração do PIX (' + pixRes.status + ')');
         }
 
         const data = await pixRes.json();
