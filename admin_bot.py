@@ -5,7 +5,7 @@ import telebot
 from urllib.parse import quote
 
 # CONFIGURAÇÕES
-FILEPATH = 'redacao-nota-1000.html'
+FILEPATH = 'index.html'
 # Coloque seu Token aqui ou o script tentará ler do ambiente
 BOT_TOKEN = '8236778290:AAGXUQWm-D3lCoOAch7cgMEf-b4mm4XZ5Mk' 
 
